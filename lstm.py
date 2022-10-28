@@ -47,25 +47,28 @@ def random_params_by_size(n, m, key, scale=1e-2):
 
 # an individual lstm cell
 def lstm_cell(params, prevCell, prevHidden, curToken):
-    # assumptions:
-    # params[0] is w_f, b_f
-    # params[1] is w_i, b_i
-    # params[2] is w_c, b_c
-    # params[3] is w_o, b_o
-    combined = prevHidden + curToken    
-    f = jnn.sigmoid(jnp.dot(params[0][0], combined) + params[0][1])
-    i = jnn.sigmoid(jnp.dot(params[1][0], combined) + params[1][1])
-    cand = jnp.tanh(jnp.dot(params[2][0], combined) + params[2][1])
-    o = jnn.sigmoid(jnp.dot(params[3][0], combined) + params[3][1])
-    curCell = jnp.dot(f, prevCell) + jnp.multiply(i, cand)    
-    curHidden = jnp.multiply(o, jnp.tanh(curCell))
-    return curCell, curHidden
+	# assumptions:
+	# params[0] is w_f, b_f
+	# params[1] is w_i, b_i
+	# params[2] is w_c, b_c
+	# params[3] is w_o, b_o
+
+	combined = prevHidden + curToken
+	f = jnn.sigmoid(jnp.dot(params[0][0], combined) + params[0][1])
+	i = jnn.sigmoid(jnp.dot(params[1][0], combined) + params[1][1])
+	cand = jnp.tanh(jnp.dot(params[2][0], combined) + params[2][1])
+	o = jnn.sigmoid(jnp.dot(params[3][0], combined) + params[3][1])
+	curCell = jnp.multiply(f, prevCell) + jnp.multiply(i, cand)
+	curHidden = jnp.multiply(o, jnp.tanh(curCell))
+	#print(combined, curCell, curHidden)
+	#print()
+	return curCell, curHidden
 
 ## Implementation of the loss and update functions
 # loss of a single lstm cell
 def lstm_cell_loss(param, prevCell, prevHidden, curInput, targetOutput):
-    prevCell, prevHidden = lstm_cell(param, prevCell, prevHidden, curInput)
-    return -jnp.mean(prevHidden - targetOutput)
+	prevCell, prevHidden = lstm_cell(param, prevCell, prevHidden, curInput)
+	return jnp.mean(jnp.absolute(prevHidden - targetOutput))
 
 # lstm cell update
 def lstm_cell_update(param, grads, stepSize):
@@ -76,19 +79,19 @@ def lstm_cell_update(param, grads, stepSize):
     return param
 
 # Compute accuracy
-def accuracy(params, cell_init, hidden_init, instance):
-    lstmSize = jnp.shape(params)[0]
-    pred_seq = lstm_predict(params, cell_init, hidden_init, instance)
-    pred_seq = jnp.argmax(pred_seq, axis = 1)
-    target_seq = jnp.argmax(instance[:lstmSize], axis = 1)    
-    return jnp.mean(pred_seq == target_seq)
+def accuracy(param, prevCell, prevHidden, curToken, targetVec, tokens, verbose):
+    prevCell, prevHidden = lstm_cell(param, prevCell, prevHidden, curToken)
+    pred_token = jnp.argmax(prevHidden, axis = 0)
+    target_token = jnp.argmax(targetVec, axis = 0)
+    if (verbose):
+	    pred_char = vec2str(prevHidden, tokens)
+	    target_char = vec2str(targetVec, tokens)
+	    print(pred_char, target_char)
+    return pred_token == target_token
 
 # output vector to string transformation
 def vec2str(vec, tokens):
-    outputStr = ''
-    for vI in range(jnp.shape(vec)[0]):
-        outputStr += tokens[jnp.argmax(vec[vI, :], axis = 0)]
-    return outputStr
+	return tokens[jnp.argmax(vec, axis = 0)]
 
 # pre-compile costly functions
 jitUpdate = jit(lstm_cell_update)
@@ -140,7 +143,7 @@ if __name__ == '__main__':
 	print(len(testVec))
 	print(len(test))
 
-	## Training of the LSTM model
+	##################### Training of the LSTM model
 	# number of epoches to train for
 	numEpoches = 100
 
@@ -151,7 +154,7 @@ if __name__ == '__main__':
 	lstmSize = 10
 
 	# number of instances to train
-	numInst = 1
+	numInst = 2
 
 	# size of the tokens
 	tokensSize = len(tokens)
@@ -160,8 +163,8 @@ if __name__ == '__main__':
 	n = tokensSize
 	m = tokensSize
 
-	# number of gates
-	numGates = 4
+	# the verbose
+	verbose = False
 
 	# initialize the first cell state
 	cell_init = jnp.zeros([n,], dtype = float)
@@ -169,34 +172,58 @@ if __name__ == '__main__':
 	# initialize the first hidden value
 	hidden_init = jnp.zeros([m,], dtype = float)
 
-
-	instance = trainVec[numInst - 1]
-
-	# initialize random parameters w and bias b, n + 1 accounts for the bias
-	params = []
-	for tokenI in range(len(instance) - 1):
-	    param = []
-	    for gateI in range(numGates):
-	        w = random_params_by_size(n, m, jrandom.PRNGKey(0))
-	        b = random_params_by_size(n, None, jrandom.PRNGKey(0))
-	        param.append([w, b])
-	    params.append(param)
-	        
-
-	prevCell = cell_init
-	prevHidden = hidden_init
-
 	# the gradient function of the loss
-	tempGradLoss = grad(jitLoss, argnums = 0)
+	gradLoss = grad(jitLoss, argnums = 0)
 
-	# training epoches
-	for epochI in range(numEpoches):
-	    for tokenI in range(len(instance) - 1):
-	        grads = tempGradLoss(params[tokenI], prevCell, prevHidden, instance[tokenI], instance[tokenI + 1])
-	        params[tokenI] = jitUpdate(params[tokenI], grads, step_size)
-	    
-	    totalLoss = 0
-	    for tokenI in range(len(instance) - 1):
-	        totalLoss += jitLoss(params[tokenI], prevCell, prevHidden, instance[tokenI], instance[tokenI + 1])
-	        
-	    print(totalLoss)
+	for instI in range(numInst):
+		# get the training instance
+		instance = trainVec[instI]
+
+		# initialize random parameters w and bias b, n + 1 accounts for the bias
+		params = []
+		for tokenI in range(len(instance)):
+		    param = []
+		    for gateI in range(4):
+		        w = random_params_by_size(n, m, jrandom.PRNGKey(0))
+		        b = random_params_by_size(n, None, jrandom.PRNGKey(0))
+		        param.append([w, b])
+		    params.append(param)
+
+		# training epoches
+		for epochI in range(numEpoches):
+			## Train
+			# initialize the cell and hidden
+			prevCell = cell_init
+			prevHidden = hidden_init
+
+			# update the parameters
+			for tokenI in range(1, len(instance)):
+				grads = gradLoss(params[tokenI], prevCell, prevHidden,
+					instance[tokenI - 1], instance[tokenI])
+				params[tokenI] = jitUpdate(params[tokenI], grads, step_size)
+
+		        # get the next cell and hidden
+				prevCell, prevHidden = lstm_cell(params[tokenI], prevCell,
+		        	prevHidden, instance[tokenI - 1])
+
+			## Test
+			totalLoss = 0
+			totalAcc = 0
+
+			# initialize the cell and hidden
+			prevCell = cell_init
+			prevHidden = hidden_init
+
+			# test the training performance
+			for tokenI in range(1, len(instance)):
+				totalLoss += lstm_cell_loss(params[tokenI], prevCell, prevHidden,
+					instance[tokenI - 1], instance[tokenI])
+				totalAcc += accuracy(params[tokenI], prevCell, prevHidden,
+					instance[tokenI - 1], instance[tokenI], tokens, verbose)
+
+				# get the next cell and hidden
+				prevCell, prevHidden = lstm_cell(params[tokenI], prevCell,
+					prevHidden, instance[tokenI - 1])
+
+			print("loss: ", totalLoss)
+			print("Accuracy: ", float(totalAcc) / (len(instance) - 1))
