@@ -13,6 +13,7 @@ import os
 import pandas as pd
 import opendatasets as od
 import time
+from random import randint
 
 ## Download the dataset
 ############ DO NOT PUSH DATASET TO GITHUB #################
@@ -37,6 +38,13 @@ def toOneHot(lines: list, tokens: list) -> list:
         lineVec[np.arange(numedLine.size), numedLine] = 1
         oneHot.append(lineVec)
     return oneHot
+
+def getMaxSeqLen(lines: list) -> int:
+	maxSeqLen = 0
+	for lineI in range(len(lines)):
+		if (len(lines[lineI]) > maxSeqLen):
+			maxSeqLen = len(lines[lineI])
+	return maxSeqLen
 
 ## Implementation of components of LSTM
 # initialize the parameters randomly
@@ -64,55 +72,61 @@ def lstm_cell(params, prevCell, prevHidden, curToken):
 	#print()
 	return curCell, curHidden
 
+# a sequence of lstm cells
+def lstm_seq(params, prevCell, prevHidden, curInput):
+	assert(len(params) == len(curInput))
+	for inputI in range(len(curInput)):
+		prevCell, prevHidden = jit(lstm_cell)(params[inputI], prevCell,
+			prevHidden, curInput[inputI])
+	return prevCell, prevHidden
+
 ## Implementation of the loss and update functions
-# loss of a single lstm cell
-def lstm_cell_loss(param, prevCell, prevHidden, curInput, targetOutput):
-	prevCell, prevHidden = lstm_cell(param, prevCell, prevHidden, curInput)
+# loss of lstm cells on a given input sequence predicting the next token
+def lstm_seq_loss(params, prevCell, prevHidden, curInput, targetOutput):
+	# curInput is a sequence
+	# targetOutput is a single token
+	assert(len(params) == len(curInput))
+	for inputI in range(len(curInput)):
+		prevCell, prevHidden = jit(lstm_cell)(params[inputI], prevCell,
+			prevHidden, curInput[inputI])
 	return jnp.mean(jnp.absolute(prevHidden - targetOutput))
 
-# lstm cell update
-def lstm_cell_update(param, grads, stepSize):
-    numGates = len(param)
-    for gateI in range(numGates):
-        param[gateI][0] -= stepSize * grads[gateI][0]
-        param[gateI][1] -= stepSize * grads[gateI][1]
-    return param
+# lstm sequence update
+def lstm_seq_update(params, grads, stepSize):
+	for paramI in range(len(params)):
+		param = params[paramI]
+		numGates = len(param)
+		for gateI in range(numGates):
+			param[gateI][0] -= stepSize * grads[paramI][gateI][0]
+			param[gateI][1] -= stepSize * grads[paramI][gateI][1]
+		params[paramI] = param
+	return params
 
 # Compute accuracy
-def accuracy(param, prevCell, prevHidden, curToken, targetVec, tokens, verbose):
-    prevCell, prevHidden = lstm_cell(param, prevCell, prevHidden, curToken)
-    pred_token = jnp.argmax(prevHidden, axis = 0)
-    target_token = jnp.argmax(targetVec, axis = 0)
-    if (verbose):
-	    pred_char = vec2str(prevHidden, tokens)
-	    target_char = vec2str(targetVec, tokens)
-	    print(pred_char, target_char)
-    return pred_token == target_token
+def accuracy(params, prevCell, prevHidden, curInput, targetVec, tokens, verbose):
+	for paramI in range(len(params)):
+		prevCell, prevHidden = jit(lstm_cell)(params[paramI], prevCell, prevHidden, curInput[paramI])
+	pred_token = jnp.argmax(prevHidden, axis = 0)
+	target_token = jnp.argmax(targetVec, axis = 0)
+	pred_char = vec2str(prevHidden, tokens)
+	target_char = vec2str(targetVec, tokens)
+	return pred_token == target_token, pred_char, target_char
 
 # output vector to string transformation
 def vec2str(vec, tokens):
 	return tokens[jnp.argmax(vec, axis = 0)]
 
-# pre-compile costly functions
-jitUpdate = jit(lstm_cell_update)
-jitLoss = jit(lstm_cell_loss)
-jitAccuracy = jit(accuracy)
-
-if __name__ == '__main__':
-	## Data preprocessing
-	## Preprocess the dataset
-	# the path name
-	path = 'bbc-news-summary/BBC News Summary/News Articles/tech/{}.txt'
-
+def dataPreProc(path):
+	# get all the lines
 	lines = []
-
+	path += '{}'
 	for i in range(1, 402):
 	    if (i < 10):
-	        index = "00{}".format(i)
+	        index = "00{}.txt".format(i)
 	    elif (i < 100):
-	        index = "0{}".format(i)
+	        index = "0{}.txt".format(i)
 	    else:
-	        index = "{}".format(i)
+	        index = "{}.txt".format(i)
 	    with open(path.format(index), 'r') as f:
 	        lines.extend(f.readlines())
 
@@ -125,6 +139,8 @@ if __name__ == '__main__':
 	# remove lines that are less than 10 tokens
 	lines = [line for line in lines if len(line) > 10]
 
+	seqMaxLen = getMaxSeqLen(lines)
+
 	# get the unique tokens
 	tokens = getTokens(lines)
 
@@ -136,12 +152,22 @@ if __name__ == '__main__':
 	# convert the training set and test set into one hot vectors
 	trainVec = toOneHot(train, tokens)
 	testVec = toOneHot(test, tokens)
+	
+	# return the one hot vectors of training and test sets and the set of tokens
+	return trainVec, testVec, tokens, seqMaxLen
 
-	print(len(trainVec))
-	print(len(train))
 
-	print(len(testVec))
-	print(len(test))
+if (__name__ == '__main__'):
+	## Data preprocessing
+	## Preprocess the dataset
+	# the path name
+	path = 'bbc-news-summary/BBC News Summary/News Articles/tech/'
+
+	trainVec, testVec, tokens, seqMaxLen = dataPreProc(path)
+
+	print('size of training data: ', len(trainVec))
+	print('size of test data: ', len(testVec))
+	print('maximum instance length: ', seqMaxLen)
 
 	##################### Training of the LSTM model
 	# number of epoches to train for
@@ -150,11 +176,8 @@ if __name__ == '__main__':
 	# custom the step size
 	step_size = 0.1
 
-	# number of modules in the LSTM model
-	lstmSize = 10
-
-	# number of instances to train
-	numInst = 2
+	# custom the lstm size
+	lstmSize = 33
 
 	# size of the tokens
 	tokensSize = len(tokens)
@@ -172,41 +195,45 @@ if __name__ == '__main__':
 	# initialize the first hidden value
 	hidden_init = jnp.zeros([m,], dtype = float)
 
-	# the gradient function of the loss
-	gradLoss = grad(jitLoss, argnums = 0)
+	# initialize random parameters w and bias b
+	params = []
+	for tokenI in range(lstmSize):
+	    param = []
+	    for gateI in range(4):
+	        w = random_params_by_size(n, m, jrandom.PRNGKey(0))
+	        b = random_params_by_size(n, None, jrandom.PRNGKey(0))
+	        param.append([w, b])
+	    params.append(param)
 
-	for instI in range(numInst):
-		# get the training instance
-		instance = trainVec[instI]
-
-		# initialize random parameters w and bias b, n + 1 accounts for the bias
-		params = []
-		for tokenI in range(len(instance)):
-		    param = []
-		    for gateI in range(4):
-		        w = random_params_by_size(n, m, jrandom.PRNGKey(0))
-		        b = random_params_by_size(n, None, jrandom.PRNGKey(0))
-		        param.append([w, b])
-		    params.append(param)
-
-		# training epoches
-		for epochI in range(numEpoches):
-			## Train
+	# training epoches
+	for epochI in range(numEpoches):
+		## Train
+		# get a random training instance
+		instIndex = randint(0, len(trainVec) - 1)
+		instance = trainVec[instIndex]
+		
+		# skip if instance is too short
+		if (len(instance) <= lstmSize): continue
+		
+		print('chosen training index: ', instIndex)
+		while (1):
+			print('on training index: ', instIndex)
 			# initialize the cell and hidden
 			prevCell = cell_init
 			prevHidden = hidden_init
 
 			# update the parameters
-			for tokenI in range(1, len(instance)):
-				grads = gradLoss(params[tokenI], prevCell, prevHidden,
-					instance[tokenI - 1], instance[tokenI])
-				params[tokenI] = jitUpdate(params[tokenI], grads, step_size)
+			for tokenI in range(0, len(instance) - lstmSize - 1):	
+				grads = grad(jit(lstm_seq_loss), argnums = 0)(params, prevCell, prevHidden,
+					instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1])
+				params = jit(lstm_seq_update)(params, grads, step_size)
 
-		        # get the next cell and hidden
-				prevCell, prevHidden = lstm_cell(params[tokenI], prevCell,
-		        	prevHidden, instance[tokenI - 1])
+			    # get the next cell and hidden
+				prevCell, prevHidden = jit(lstm_seq)(params, prevCell,
+			    	prevHidden, instance[tokenI : tokenI + lstmSize])
+				print(tokenI, ' / ', len(instance) - lstmSize - 2)
 
-			## Test
+			## See the performance
 			totalLoss = 0
 			totalAcc = 0
 
@@ -214,16 +241,38 @@ if __name__ == '__main__':
 			prevCell = cell_init
 			prevHidden = hidden_init
 
+			# initialize the predicted sequence and the target sequence
+			pred_seq = ''
+			target_seq = ''
+			
 			# test the training performance
-			for tokenI in range(1, len(instance)):
-				totalLoss += lstm_cell_loss(params[tokenI], prevCell, prevHidden,
-					instance[tokenI - 1], instance[tokenI])
-				totalAcc += accuracy(params[tokenI], prevCell, prevHidden,
-					instance[tokenI - 1], instance[tokenI], tokens, verbose)
+			for tokenI in range(0, len(instance) - lstmSize - 1):
+				totalLoss += jit(lstm_seq_loss)(params, prevCell, prevHidden,
+					instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1])
+				acc, pred_char, target_char = accuracy(params, prevCell, prevHidden,
+					instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1],
+					tokens, verbose)
+				totalAcc += acc
+				pred_seq += pred_char
+				target_seq += target_char
 
 				# get the next cell and hidden
-				prevCell, prevHidden = lstm_cell(params[tokenI], prevCell,
-					prevHidden, instance[tokenI - 1])
-
+				prevCell, prevHidden = jit(lstm_seq)(params, prevCell,
+			    	prevHidden, instance[tokenI : tokenI + lstmSize])
+			
+			# compute the average accuracy
+			avgAcc = float(totalAcc) / (len(instance) - 1)
+			
+			# print the loss and accuracy
 			print("loss: ", totalLoss)
-			print("Accuracy: ", float(totalAcc) / (len(instance) - 1))
+			print("Accuracy: ", avgAcc)
+			print(pred_seq)
+			print(target_seq)
+			print()
+			
+			# stop training on this instance if average accuracy is good enough
+			if (avgAcc > 0.8): break
+			
+			
+			
+
