@@ -72,26 +72,31 @@ def lstm_cell(params, prevCell, prevHidden, curToken):
 	#print()
 	return curCell, curHidden
 
+jitLstmCell = jit(lstm_cell)
+
 # a sequence of lstm cells
+@jit
 def lstm_seq(params, prevCell, prevHidden, curInput):
 	assert(len(params) == len(curInput))
 	for inputI in range(len(curInput)):
-		prevCell, prevHidden = jit(lstm_cell)(params[inputI], prevCell,
+		prevCell, prevHidden = jitLstmCell(params[inputI], prevCell,
 			prevHidden, curInput[inputI])
 	return prevCell, prevHidden
 
 ## Implementation of the loss and update functions
 # loss of lstm cells on a given input sequence predicting the next token
+@jit
 def lstm_seq_loss(params, prevCell, prevHidden, curInput, targetOutput):
 	# curInput is a sequence
 	# targetOutput is a single token
 	assert(len(params) == len(curInput))
 	for inputI in range(len(curInput)):
-		prevCell, prevHidden = jit(lstm_cell)(params[inputI], prevCell,
+		prevCell, prevHidden = jitLstmCell(params[inputI], prevCell,
 			prevHidden, curInput[inputI])
 	return jnp.mean(jnp.absolute(prevHidden - targetOutput))
 
 # lstm sequence update
+@jit
 def lstm_seq_update(params, grads, stepSize):
 	for paramI in range(len(params)):
 		param = params[paramI]
@@ -105,7 +110,7 @@ def lstm_seq_update(params, grads, stepSize):
 # Compute accuracy
 def accuracy(params, prevCell, prevHidden, curInput, targetVec, tokens, verbose):
 	for paramI in range(len(params)):
-		prevCell, prevHidden = jit(lstm_cell)(params[paramI], prevCell, prevHidden, curInput[paramI])
+		prevCell, prevHidden = jitLstmCell(params[paramI], prevCell, prevHidden, curInput[paramI])
 	pred_token = jnp.argmax(prevHidden, axis = 0)
 	target_token = jnp.argmax(targetVec, axis = 0)
 	pred_char = vec2str(prevHidden, tokens)
@@ -156,6 +161,8 @@ def dataPreProc(path):
 	# return the one hot vectors of training and test sets and the set of tokens
 	return trainVec, testVec, tokens, seqMaxLen
 
+# function optimizations
+jitGradLstmSeqLoss = jit(grad(lstm_seq_loss, argnums = 0))
 
 if (__name__ == '__main__'):
 	## Data preprocessing
@@ -177,7 +184,7 @@ if (__name__ == '__main__'):
 	step_size = 0.1
 
 	# custom the lstm size
-	lstmSize = 33
+	lstmSize = 100
 
 	# size of the tokens
 	tokensSize = len(tokens)
@@ -208,70 +215,70 @@ if (__name__ == '__main__'):
 	# training epoches
 	for epochI in range(numEpoches):
 		## Train
-		# get a random training instance
-		instIndex = randint(0, len(trainVec) - 1)
-		instance = trainVec[instIndex]
-		
-		# skip if instance is too short
-		if (len(instance) <= lstmSize): continue
-		
-		print('chosen training index: ', instIndex)
-		while (1):
-			print('on training index: ', instIndex)
-			# initialize the cell and hidden
-			prevCell = cell_init
-			prevHidden = hidden_init
-
-			# update the parameters
-			for tokenI in range(0, len(instance) - lstmSize - 1):	
-				grads = grad(jit(lstm_seq_loss), argnums = 0)(params, prevCell, prevHidden,
-					instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1])
-				params = jit(lstm_seq_update)(params, grads, step_size)
-
-			    # get the next cell and hidden
-				prevCell, prevHidden = jit(lstm_seq)(params, prevCell,
-			    	prevHidden, instance[tokenI : tokenI + lstmSize])
-				print(tokenI, ' / ', len(instance) - lstmSize - 2)
-
-			## See the performance
-			totalLoss = 0
-			totalAcc = 0
-
-			# initialize the cell and hidden
-			prevCell = cell_init
-			prevHidden = hidden_init
-
-			# initialize the predicted sequence and the target sequence
-			pred_seq = ''
-			target_seq = ''
+		for instIndex in range(len(trainVec)):
+			# get a training instance
+			instance = trainVec[instIndex]
 			
-			# test the training performance
-			for tokenI in range(0, len(instance) - lstmSize - 1):
-				totalLoss += jit(lstm_seq_loss)(params, prevCell, prevHidden,
-					instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1])
-				acc, pred_char, target_char = accuracy(params, prevCell, prevHidden,
-					instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1],
-					tokens, verbose)
-				totalAcc += acc
-				pred_seq += pred_char
-				target_seq += target_char
+			# skip if instance is too short
+			if (len(instance) <= lstmSize or len(instance) > lstmSize * 2): continue
+			
+			print('chosen training index: ', instIndex)
+			for i in range(3):
+				print('on training index: ', instIndex)
+				# initialize the cell and hidden
+				prevCell = cell_init
+				prevHidden = hidden_init
 
-				# get the next cell and hidden
-				prevCell, prevHidden = jit(lstm_seq)(params, prevCell,
-			    	prevHidden, instance[tokenI : tokenI + lstmSize])
-			
-			# compute the average accuracy
-			avgAcc = float(totalAcc) / (len(instance) - 1)
-			
-			# print the loss and accuracy
-			print("loss: ", totalLoss)
-			print("Accuracy: ", avgAcc)
-			print(pred_seq)
-			print(target_seq)
-			print()
-			
-			# stop training on this instance if average accuracy is good enough
-			if (avgAcc > 0.8): break
+				# update the parameters
+				for tokenI in range(0, len(instance) - lstmSize - 1):
+					grads = jitGradLstmSeqLoss(params, prevCell, prevHidden,
+						instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1])
+					params = lstm_seq_update(params, grads, step_size)
+
+					# get the next cell and hidden
+					prevCell, prevHidden = lstm_seq(params, prevCell,
+						prevHidden, instance[tokenI : tokenI + lstmSize])
+					#print(tokenI, ' / ', len(instance) - lstmSize - 2)
+
+				## See the performance
+				totalLoss = 0
+				totalAcc = 0
+
+				# initialize the cell and hidden
+				prevCell = cell_init
+				prevHidden = hidden_init
+
+				# initialize the predicted sequence and the target sequence
+				pred_seq = ''
+				target_seq = ''
+				
+				# test the training performance
+				for tokenI in range(0, len(instance) - lstmSize - 1):
+					totalLoss += lstm_seq_loss(params, prevCell, prevHidden,
+						instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1])
+					acc, pred_char, target_char = accuracy(params, prevCell, prevHidden,
+						instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1],
+						tokens, verbose)
+					totalAcc += acc
+					pred_seq += pred_char
+					target_seq += target_char
+
+					# get the next cell and hidden
+					prevCell, prevHidden = lstm_seq(params, prevCell,
+						prevHidden, instance[tokenI : tokenI + lstmSize])
+				
+				# compute the average accuracy
+				avgAcc = float(totalAcc) / (tokenI + 1)
+				
+				# print the loss and accuracy
+				print("loss: ", totalLoss)
+				print("Accuracy: ", avgAcc)
+				print(pred_seq)
+				print(target_seq)
+				print()
+				
+				# stop training on this instance if average accuracy is good enough
+				#if (avgAcc > 0.8): break
 			
 			
 			
