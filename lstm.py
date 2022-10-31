@@ -14,6 +14,7 @@ import pandas as pd
 import opendatasets as od
 import time
 from random import randint
+import pickle
 
 ## Download the dataset
 ############ DO NOT PUSH DATASET TO GITHUB #################
@@ -168,7 +169,7 @@ if (__name__ == '__main__'):
 	## Data preprocessing
 	## Preprocess the dataset
 	# the path name
-	path = 'bbc-news-summary/BBC News Summary/News Articles/tech/'
+	path = './bbc-news-summary/BBC News Summary/News Articles/tech/'
 
 	trainVec, testVec, tokens, seqMaxLen = dataPreProc(path)
 
@@ -177,14 +178,17 @@ if (__name__ == '__main__'):
 	print('maximum instance length: ', seqMaxLen)
 
 	##################### Training of the LSTM model
+	# model save path
+	modelSavePath = './models/'
+
 	# number of epoches to train for
-	numEpoches = 100
+	numEpoches = 1
 
 	# custom the step size
 	step_size = 0.1
 
 	# custom the lstm size
-	lstmSize = 100
+	lstmSize = 20
 
 	# size of the tokens
 	tokensSize = len(tokens)
@@ -212,6 +216,8 @@ if (__name__ == '__main__'):
 	        param.append([w, b])
 	    params.append(param)
 
+	params = pickle.load(open(modelSavePath + "lstm_model.p", "rb"))
+
 	# training epoches
 	for epochI in range(numEpoches):
 		## Train
@@ -223,7 +229,7 @@ if (__name__ == '__main__'):
 			if (len(instance) <= lstmSize or len(instance) > lstmSize * 2): continue
 			
 			print('chosen training index: ', instIndex)
-			for i in range(3):
+			while (1):
 				print('on training index: ', instIndex)
 				# initialize the cell and hidden
 				prevCell = cell_init
@@ -278,7 +284,10 @@ if (__name__ == '__main__'):
 				print()
 				
 				# stop training on this instance if average accuracy is good enough
-				#if (avgAcc > 0.8): break
+				if (avgAcc > 0.99): break
+
+			pickle.dump(params, open(modelSavePath + "lstm_model.p", "wb"))
+			break
 			
 			
 			
