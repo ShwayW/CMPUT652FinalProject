@@ -1,5 +1,11 @@
+## The LSTM model
+# Shway Wang
+# Nov. 1, 2022
+
 ## Imports
 # jax related
+from jax.example_libraries import optimizers as jax_opt
+from functools import partial
 import jax.numpy as jnp
 import jax.nn as jnn
 from jax import grad, jit, vmap, lax, value_and_grad
@@ -7,45 +13,18 @@ from jax import random as jrandom
 from jax.scipy.special import logsumexp
 
 # others
-from math import floor
-import numpy as np
+
 import os
 import pandas as pd
 import opendatasets as od
 import time
 from random import randint
 import pickle
+from aux import *
 
 ## Download the dataset
 ############ DO NOT PUSH DATASET TO GITHUB #################
 #od.download("https://www.kaggle.com/datasets/pariza/bbc-news-summary")
-
-## function to get unique tokens from the dataset
-def getTokens(lines: list) -> list:
-    tokens = []
-    for line in lines:
-        for t in line:
-            if (t not in tokens):
-                tokens.append(t)
-    return tokens
-
-## function to convert data to one hot vectors
-def toOneHot(lines: list, tokens: list) -> list:
-    oneHot = []
-    for lineI in range(len(lines)):
-        line = lines[lineI]
-        numedLine = np.array([tokens.index(token) for token in line])
-        lineVec = np.zeros((numedLine.size, len(tokens)))
-        lineVec[np.arange(numedLine.size), numedLine] = 1
-        oneHot.append(lineVec)
-    return oneHot
-
-def getMaxSeqLen(lines: list) -> int:
-	maxSeqLen = 0
-	for lineI in range(len(lines)):
-		if (len(lines[lineI]) > maxSeqLen):
-			maxSeqLen = len(lines[lineI])
-	return maxSeqLen
 
 ## Implementation of components of LSTM
 # initialize the parameters randomly
@@ -55,6 +34,7 @@ def random_params_by_size(n, m, key, scale=1e-2):
     return scale * jrandom.normal(key, (n, m))
 
 # an individual lstm cell
+@jit
 def lstm_cell(params, prevCell, prevHidden, curToken):
 	# assumptions:
 	# params[0] is w_f, b_f
@@ -69,18 +49,14 @@ def lstm_cell(params, prevCell, prevHidden, curToken):
 	o = jnn.sigmoid(jnp.dot(params[3][0], combined) + params[3][1])
 	curCell = jnp.multiply(f, prevCell) + jnp.multiply(i, cand)
 	curHidden = jnp.multiply(o, jnp.tanh(curCell))
-	#print(combined, curCell, curHidden)
-	#print()
 	return curCell, curHidden
-
-jitLstmCell = jit(lstm_cell)
 
 # a sequence of lstm cells
 @jit
 def lstm_seq(params, prevCell, prevHidden, curInput):
 	assert(len(params) == len(curInput))
 	for inputI in range(len(curInput)):
-		prevCell, prevHidden = jitLstmCell(params[inputI], prevCell,
+		prevCell, prevHidden = lstm_cell(params[inputI], prevCell,
 			prevHidden, curInput[inputI])
 	return prevCell, prevHidden
 
@@ -92,78 +68,44 @@ def lstm_seq_loss(params, prevCell, prevHidden, curInput, targetOutput):
 	# targetOutput is a single token
 	assert(len(params) == len(curInput))
 	for inputI in range(len(curInput)):
-		prevCell, prevHidden = jitLstmCell(params[inputI], prevCell,
+		prevCell, prevHidden = lstm_cell(params[inputI], prevCell,
 			prevHidden, curInput[inputI])
 	return jnp.mean(jnp.absolute(prevHidden - targetOutput))
-
-# lstm sequence update
-@jit
-def lstm_seq_update(params, grads, stepSize):
-	for paramI in range(len(params)):
-		param = params[paramI]
-		numGates = len(param)
-		for gateI in range(numGates):
-			param[gateI][0] -= stepSize * grads[paramI][gateI][0]
-			param[gateI][1] -= stepSize * grads[paramI][gateI][1]
-		params[paramI] = param
-	return params
 
 # Compute accuracy
 def accuracy(params, prevCell, prevHidden, curInput, targetVec, tokens, verbose):
 	for paramI in range(len(params)):
-		prevCell, prevHidden = jitLstmCell(params[paramI], prevCell, prevHidden, curInput[paramI])
+		prevCell, prevHidden = lstm_cell(params[paramI], prevCell, prevHidden, curInput[paramI])
 	pred_token = jnp.argmax(prevHidden, axis = 0)
 	target_token = jnp.argmax(targetVec, axis = 0)
 	pred_char = vec2str(prevHidden, tokens)
 	target_char = vec2str(targetVec, tokens)
 	return pred_token == target_token, pred_char, target_char
 
-# output vector to string transformation
-def vec2str(vec, tokens):
-	return tokens[jnp.argmax(vec, axis = 0)]
-
-def dataPreProc(path):
-	# get all the lines
-	lines = []
-	path += '{}'
-	for i in range(1, 402):
-	    if (i < 10):
-	        index = "00{}.txt".format(i)
-	    elif (i < 100):
-	        index = "0{}.txt".format(i)
-	    else:
-	        index = "{}.txt".format(i)
-	    with open(path.format(index), 'r') as f:
-	        lines.extend(f.readlines())
-
-	# Remove new lines and empty lines
-	lines = [line for line in lines if line != '\n' or '']
-
-	# Strip all lines
-	lines = [line.strip() for line in lines]
-
-	# remove lines that are less than 10 tokens
-	lines = [line for line in lines if len(line) > 10]
-
-	seqMaxLen = getMaxSeqLen(lines)
-
-	# get the unique tokens
-	tokens = getTokens(lines)
-
-	# split the lines to training set and test set
-	splitInd = floor(0.8 * len(lines))
-	train = lines[:splitInd + 1]
-	test = lines[splitInd + 1:]
-
-	# convert the training set and test set into one hot vectors
-	trainVec = toOneHot(train, tokens)
-	testVec = toOneHot(test, tokens)
-	
-	# return the one hot vectors of training and test sets and the set of tokens
-	return trainVec, testVec, tokens, seqMaxLen
-
 # function optimizations
-jitGradLstmSeqLoss = jit(grad(lstm_seq_loss, argnums = 0))
+jitValueGradLstmSeqLoss = jit(value_and_grad(lstm_seq_loss, argnums = 0))
+
+def train_step(step_i, opt_state, prevCell, prevHidden, instance, lstmSize):
+	# update the parameters
+	totalLoss = 0
+	for tokenI in range(len(instance) - lstmSize - 1):
+		# Compute the loss and the gradients for the current parameters
+		params = get_params(opt_state)
+		loss, grads = jitValueGradLstmSeqLoss(params, prevCell, prevHidden,
+			instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1])
+		totalLoss += loss
+
+		# update the parameters using adam and get the optimized state
+		opt_state = jit(opt_update)(step_i, grads, opt_state)
+		params = get_params(opt_state)
+
+		# get the next cell and hidden
+		prevCell, prevHidden = lstm_seq(params, prevCell, prevHidden,
+				instance[tokenI : tokenI + lstmSize])
+
+	return totalLoss, opt_state
+
+
 
 if (__name__ == '__main__'):
 	## Data preprocessing
@@ -171,7 +113,7 @@ if (__name__ == '__main__'):
 	# the path name
 	path = './bbc-news-summary/BBC News Summary/News Articles/tech/'
 
-	trainVec, testVec, tokens, seqMaxLen = dataPreProc(path)
+	trainVec, testVec, tokens, seqMaxLen = textDataPreProc(path)
 
 	print('size of training data: ', len(trainVec))
 	print('size of test data: ', len(testVec))
@@ -184,11 +126,8 @@ if (__name__ == '__main__'):
 	# number of epoches to train for
 	numEpoches = 1
 
-	# custom the step size
-	step_size = 0.1
-
 	# custom the lstm size
-	lstmSize = 20
+	lstmSize = 200
 
 	# size of the tokens
 	tokensSize = len(tokens)
@@ -216,7 +155,12 @@ if (__name__ == '__main__'):
 	        param.append([w, b])
 	    params.append(param)
 
-	params = pickle.load(open(modelSavePath + "lstm_model.p", "rb"))
+	# use adam optimizer
+	opt_init, opt_update, get_params = jax_opt.adam(0.001)
+	opt_state = opt_init(params)
+
+
+	#params = pickle.load(open(modelSavePath + "lstm_model.p", "rb"))
 
 	# training epoches
 	for epochI in range(numEpoches):
@@ -228,26 +172,15 @@ if (__name__ == '__main__'):
 			# skip if instance is too short
 			if (len(instance) <= lstmSize or len(instance) > lstmSize * 2): continue
 			
-			print('chosen training index: ', instIndex)
-			while (1):
+			for step_i in range(1000):
 				print('on training index: ', instIndex)
-				# initialize the cell and hidden
-				prevCell = cell_init
-				prevHidden = hidden_init
+				# a training step
+				totalLoss, opt_state = train_step(step_i, opt_state, cell_init, hidden_init, instance, lstmSize)
 
-				# update the parameters
-				for tokenI in range(0, len(instance) - lstmSize - 1):
-					grads = jitGradLstmSeqLoss(params, prevCell, prevHidden,
-						instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1])
-					params = lstm_seq_update(params, grads, step_size)
-
-					# get the next cell and hidden
-					prevCell, prevHidden = lstm_seq(params, prevCell,
-						prevHidden, instance[tokenI : tokenI + lstmSize])
-					#print(tokenI, ' / ', len(instance) - lstmSize - 2)
+				# get the trained parameters from the optimized state
+				params = get_params(opt_state)
 
 				## See the performance
-				totalLoss = 0
 				totalAcc = 0
 
 				# initialize the cell and hidden
@@ -260,8 +193,6 @@ if (__name__ == '__main__'):
 				
 				# test the training performance
 				for tokenI in range(0, len(instance) - lstmSize - 1):
-					totalLoss += lstm_seq_loss(params, prevCell, prevHidden,
-						instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1])
 					acc, pred_char, target_char = accuracy(params, prevCell, prevHidden,
 						instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1],
 						tokens, verbose)
@@ -284,10 +215,9 @@ if (__name__ == '__main__'):
 				print()
 				
 				# stop training on this instance if average accuracy is good enough
-				if (avgAcc > 0.99): break
+				if (avgAcc > 0.95): break
 
 			pickle.dump(params, open(modelSavePath + "lstm_model.p", "wb"))
-			break
 			
 			
 			
