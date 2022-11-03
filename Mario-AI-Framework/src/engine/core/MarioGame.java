@@ -1,9 +1,12 @@
 package engine.core;
 
+import java.io.*;
 import java.awt.image.VolatileImage;
 import java.util.ArrayList;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
+import java.io.FileWriter; 
+import java.io.File;
 
 import javax.swing.JFrame;
 
@@ -242,15 +245,35 @@ public class MarioGame {
         }
 
         MarioTimer agentTimer = new MarioTimer(MarioGame.maxTime);
-        this.agent.initialize(new MarioForwardModel(this.world.clone()), agentTimer);
+
+        MarioForwardModel model =  new MarioForwardModel(this.world.clone());
+        this.agent.initialize(model, agentTimer);
 
         ArrayList<MarioEvent> gameEvents = new ArrayList<>();
         ArrayList<MarioAgentEvent> agentEvents = new ArrayList<>();
+
+        File PositionData = new File("positionData.txt"); 
+        PositionData.delete(); 
+        File PositionData2 = new File("positionData.txt"); 
+
+        // Print x-length of the level 
+
+        int xLength = level.length()/16-1; 
+        String xLengthString = Integer.toString(xLength) + "\n";
+        try{
+            FileWriter myWriter = new FileWriter("positionData.txt", true);
+            myWriter.write(xLengthString);
+            myWriter.close();
+        }
+        catch(IOException ex){
+            System.out.println("An error occured");
+            return new MarioResult(this.world, gameEvents, agentEvents);
+        }    
         while (this.world.gameStatus == GameStatus.RUNNING) {
             if (!this.pause) {
                 //get actions
                 agentTimer = new MarioTimer(MarioGame.maxTime);
-                boolean[] actions = this.agent.getActions(new MarioForwardModel(this.world.clone()), agentTimer);
+                boolean[] actions = this.agent.getActions(model, agentTimer);
                 if (MarioGame.verbose) {
                     if (agentTimer.getRemainingTime() < 0 && Math.abs(agentTimer.getRemainingTime()) > MarioGame.graceTime) {
                         System.out.println("The Agent is slowing down the game by: "
@@ -264,6 +287,25 @@ public class MarioGame {
                         this.world.mario.y, (this.world.mario.isLarge ? 1 : 0) + (this.world.mario.isFire ? 1 : 0),
                         this.world.mario.onGround, this.world.currentTick));
             }
+
+            //System.out.println("Current state of agent " + model.getMarioScreenTilePos()[0] + ", " +model.getMarioScreenTilePos()[1]);
+            System.out.println("Current Mario Position " + this.world.mario.x +", " + this.world.mario.y);
+
+            int screenX = (int) (this.world.mario.x  / 16);
+            int screenY = (int) (this.world.mario.y / 16);
+            String marioX = Integer.toString(screenX);
+            String marioY = Integer.toString(screenY); 
+            String marioCoordinates = marioX + "," + marioY+"\n"; 
+            System.out.println(marioCoordinates);
+            try{
+                FileWriter myWriter = new FileWriter("positionData.txt", true);
+                myWriter.write(marioCoordinates);
+                myWriter.close();
+            }
+            catch(IOException ex){
+                System.out.println("An error occured");
+                return new MarioResult(this.world, gameEvents, agentEvents);
+            }            
 
             //render world
             if (visual) {
