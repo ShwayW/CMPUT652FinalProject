@@ -30,13 +30,15 @@ public class PythonController {
     }
     
     public static StepResult reset(boolean render) {
-    	
+    	// Start new game and return first observation
+
     	game = new MarioGame();
     	MarioResult result = game.buildGame(new agents.robinBaumgarten.Agent(), getLevel("./levels/original/lvl-1.txt"), 20, 0, render);
     	return game.stepGame(new boolean[] {false, false, false, false, false});
     }
     
     public static StepResult step(boolean[] action) {
+        // Step the environment once (4 frames due to frame skip)
     	return game.stepGame(action);
     }
     
@@ -45,20 +47,19 @@ public class PythonController {
     }
 
     public static void sample() {
+        // Sample code which runs the game twice, once with holding right the entire time and second time with an A* agent
+
         MarioGame game = new MarioGame();
-        // printResults(game.playGame(getLevel("../levels/original/lvl-1.txt"), 200, 0));
+
         MarioResult result = game.buildGame(new agents.random.Agent(), getLevel("./levels/original/lvl-1.txt"), 20, 0, true);
         while (result.getGameStatus() == GameStatus.RUNNING) {
             game.stepGame(new boolean[] {false, true, false, false, false});
         }
         game.killGame(); // reset()
 
-
-        // printResults(game.playGame(getLevel("../levels/original/lvl-1.txt"), 200, 0));
         result = game.buildGame(new agents.robinBaumgarten.Agent(), getLevel("./levels/original/lvl-1.txt"), 20, 0, true);
         while (result.getGameStatus() == GameStatus.RUNNING) {
             game.stepGame();
         }
-        // game.killGame(); // reset()
     }
 }

@@ -1,34 +1,33 @@
 import gym
 from gym import spaces
 import numpy as np
-
 import jpype
  
 class MarioEnv(gym.Env):
-    """Custom Environment that follows gym interface"""
+    """Custom Gym environment based on Mario-AI-Framework written in Java"""
+
     metadata = {"render.modes": ["human"]}
     
     def __init__(self, render=True):
         super(MarioEnv, self).__init__()
+
         # Define action and observation space
-        # They must be gym.spaces objects
-        # Example when using discrete actions:
         self.action_space = spaces.Discrete(10)
         # left run jump, left jump, left run, left, jump, nothing, right, right run, right jump, right run jump, 
 
-        # Example for using image as input (channel-first; channel-last also works):
+        # Using image as an input in the form (width, height, channel)
         self.observation_space = spaces.Box(low=0, high=255,
-                                            shape=(1, 16, 16), dtype=np.uint8) # 4 frames stacked
+                                            shape=(16, 16, 1), dtype=np.uint8)
 
+        self.obs = np.zeros([1, 16, 16]) # note that this is in channel-first because its easier to do operations on
         self.render = render
 
         # Connect JVM
         if not jpype.isJVMStarted():
             jpype.startJVM(jpype.getDefaultJVMPath(), "-ea")
-        jpype.addClassPath("/home/michael/Documents/pcg/CMPUT652FinalProject/Mario-AI-Framework/src")
-        self.main = jpype.JClass('PythonController')
-        self.obs = np.zeros([1, 16, 16])
+        jpype.addClassPath("/home/michael/Documents/pcg/CMPUT652FinalProject/Mario-AI-Framework/src") # TODO: Edit this
 
+        self.main = jpype.JClass('PythonController')
 
 
     def step(self, action):
@@ -56,54 +55,56 @@ class MarioEnv(gym.Env):
         elif action == 9:
             act = [False, True, False, True, True] # Right Run Jump
 
-        # For now, just step the game 4 times with the same input, in future might want to change the reward calculation to only calculate once
+        # TODO: For now, just step the game 4 times with the same input, in future might want to change the reward calculation to only calculate once
         # Stack every 4th skipped frame into the observation space
         reward = 0
         for i in range(4): 
             result = self.main.step(act)
-            reward += result.reward
+            # reward += result.reward
 
-        # self.obs[0] = self.obs[1]
-        # self.obs[1] = self.obs[2]
-        # self.obs[2] = self.obs[3]
-        # self.obs[3] = self._get_single_obs(result)
-        self.obs[0] = self._get_single_obs(result)
+        reward = result.reward
 
-        done = result.done
-        info = {}
+        obs = self._get_single_obs(result) # NOTE: Frame-stacking will be done outside of the environment through a Gym-wrapper
+        self.obs = np.moveaxis(obs, -1, 0) # Switch from channel-first to channel-last
+        self.obs = self.obs.reshape([16, 16, 1])
 
-        if done:
-            self.main.close()
+        done = result.done # episode terminates if mario dies, completes the level, or runs out of time
+        info = {} # Can place debugging info here
 
+        try: # TODO: This is just a band-aid fix and sometimes doesnt close everything properly. Should look into it more
+            if done:
+                self.main.close()
+        except:
+            pass
+        
         return self.obs, reward, done, info
         
     def reset(self):
-        
-        
+        # Reset the level and all necessary variables
 
         # reset Java game environment
         result = self.main.reset(self.render)
 
-        # fill observation with first frame data
-        single_obs = self._get_single_obs(result)
+        # get initial observation        
+        obs = self._get_single_obs(result)
+        self.obs = np.moveaxis(obs, -1, 0)
         
-        self.obs = np.zeros([1, 16, 16])
-        self.obs[0] = single_obs
-        # self.obs[0] = single_obs
-        # self.obs[1] = single_obs
-        # self.obs[2] = single_obs
-        # self.obs[3] = single_obs
 
-        return self.obs  
+        return self.obs.reshape([16, 16, 1])  
+
     def render(self, mode="human"):
         return
+
     def close (self):
+        # TODO: Might need to edit this code on the Java side for proper cleanup of JVM etc.
         self.main.close()
         return
 
     def _get_single_obs(self, result):
+        # Get observation from a single frame. Each value represents a tile which is a collection of pixels visible on the screen
+        # Wrappers will be used to stretch this to 84x84 input and then stack 4 frames to 4x84x84
 
-        obs = np.zeros([16, 16])
+        obs = np.zeros([16, 16], dtype=np.uint8)
         for i in range(result.observation.length):
             for j in range(result.observation[i].length):
                 obs[i][j] = result.observation[i][j]

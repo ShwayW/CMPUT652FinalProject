@@ -208,172 +208,6 @@ public class MarioGame {
         return this.runGame(agent, level, timer, marioState, visuals, fps, 2);
     }
 
-    /**
-     * Custom function to create a new mario game instance 
-     * 
-     * 
-     * 
-    */
-    public MarioResult buildGame(MarioAgent agent, String level, int timer, int marioState, boolean visuals) {
-        return this.resetGame(agent, level, timer, marioState, visuals, visuals ? 30 : 0, 2);
-    }
-
-    /**
-     * Initializes a new game level
-     * @param agent
-     * @param level
-     * @param timer
-     * @param marioState
-     * @param visuals
-     * @param fps
-     * @param scale
-     * @return
-     */
-    public MarioResult resetGame(MarioAgent agent, String level, int timer, int marioState, boolean visuals, int fps, float scale) {
-        this.visuals = visuals;
-        this.fps = fps;
-        if (visuals) {
-            this.window = new JFrame("Mario AI Framework - python");
-            this.render = new MarioRender(scale);
-            this.window.setContentPane(this.render);
-            this.window.pack();
-            this.window.setResizable(false);
-            this.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            this.render.init();
-            this.window.setVisible(true);
-        }
-        this.setAgent(agent);
-        // return this.gameLoop(level, timer, marioState, visuals, fps);
-        this.world = new MarioWorld(this.killEvents);
-        this.world.visuals = visuals;
-        this.world.initializeLevel(level, 1000 * timer);
-        if (visuals) {
-            this.world.initializeVisuals(this.render.getGraphicsConfiguration());
-        }
-        this.world.mario.isLarge = marioState > 0;
-        this.world.mario.isFire = marioState > 1;
-        this.world.update(new boolean[MarioActions.numberOfActions()]);
-        this.currentTime = System.currentTimeMillis();
-
-        //initialize graphics
-    
-        if (visuals) {
-            this.renderTarget = this.render.createVolatileImage(MarioGame.width, MarioGame.height);
-            this.backBuffer = this.render.getGraphics();
-            this.currentBuffer = renderTarget.getGraphics();
-            this.render.addFocusListener(this.render);
-        }
-
-        this.agentTimer = new MarioTimer(MarioGame.maxTime);
-        this.agent.initialize(new MarioForwardModel(this.world.clone()), this.agentTimer);
-
-        this.gameEvents = new ArrayList<>();
-        this.agentEvents = new ArrayList<>();
-
-
-        return new MarioResult(this.world, this.gameEvents, this.agentEvents);
-
-
-    }
-
-    /** Step function */
-
-    public StepResult stepGame() {
-        boolean[] actions = this.agent.getActions(new MarioForwardModel(this.world.clone()), agentTimer); // replace with agent action
-        return stepGame(actions);
-    }
-
-    public StepResult stepGame(boolean[] actions) {
-
-        MarioForwardModel model = new MarioForwardModel(this.world);
-        // while (this.world.gameStatus == GameStatus.RUNNING) {
-            if (!this.pause) {
-                //get actions
-                agentTimer = new MarioTimer(MarioGame.maxTime);
-                if (MarioGame.verbose) {
-                    if (agentTimer.getRemainingTime() < 0 && Math.abs(agentTimer.getRemainingTime()) > MarioGame.graceTime) {
-                        System.out.println("The Agent is slowing down the game by: "
-                                + Math.abs(this.agentTimer.getRemainingTime()) + " msec.");
-                    }
-                }
-                // update world
-                this.world.update(actions);
-                this.gameEvents.addAll(this.world.lastFrameEvents);
-                this.agentEvents.add(new MarioAgentEvent(actions, this.world.mario.x,
-                        this.world.mario.y, (this.world.mario.isLarge ? 1 : 0) + (this.world.mario.isFire ? 1 : 0),
-                        this.world.mario.onGround, this.world.currentTick));
-            }
-            // Gym setup based on https://github.com/Kautenja/gym-super-mario-bros 
-            // get obs
-            int[][] obs = model.getScreenCompleteObservation(0,0);
-
-            int[] pos = model.getMarioScreenTilePos();
-//            System.out.println("Coords: " + pos[0] + ", " + pos[1]);
-            obs[Math.min(pos[0], 15)][Math.min(pos[1],15)] = 99;
-
-            // print obs
-
-//            for (int[] x : obs) {
-//                for (int y : x) {
-//                        System.out.print(y + " ");
-//                }
-//                System.out.println();
-//            }
-//            System.out.println("----------------");
-            
-            // get reward
-            float vx = model.getMarioFloatVelocity()[0];
-            float vx2 = world.mario.xa;
-            float c = this.getDelay(this.fps);
-            float c2 = world.currentTick;
-            int d = world.mario.alive ? 0 : -15;
-
-            boolean done = world.gameStatus ==  GameStatus.WIN || world.gameStatus == GameStatus.LOSE;
-            float f = model.getCompletionPercentage() == 1? 15 : 0;
-            
-//            System.out.println("vx: " + vx + ", " + vx2 +
-//            "\n c: " + c + ", " + c2 +
-//            "\n d: " + d
-//            );
-
-            float reward = vx2 + d + f - 1;
-
-            reward = reward > 15 ? 15 : (reward < -15 ? -15 : reward);
-//            System.out.println("reward: " + reward);
-//
-//            System.out.println("done: " + done);
-
-
-            //render world
-            if (this.visuals) {
-                this.render.renderWorld(this.world, this.renderTarget, this.backBuffer, this.currentBuffer);
-            }
-
-            
-
-            //check if delay needed
-            if (this.getDelay(this.fps) > 0) {
-                try {
-                    this.currentTime += this.getDelay(this.fps);
-                    Thread.sleep(Math.max(0, this.currentTime - System.currentTimeMillis()));
-                } catch (InterruptedException e) {
-                    // break;
-                }
-            }
-            
-
-
-        return new StepResult(obs, reward, done, "");
-        // }
-        // return new MarioResult(this.world, gameEvents, agentEvents);
-    }
-
-    public void killGame() {
-        // this.window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
-        this.window.dispose();
-    }
-
-
     
     /**
      * Run a certain mario level with a certain agent
@@ -504,4 +338,144 @@ public class MarioGame {
         }
         return new MarioResult(this.world, gameEvents, agentEvents);
     }
+
+    // ************************ CUSTOM FUNCTIONS - Michael *******************************
+
+    /**
+     * Create a new instance of a Mario game (based on runGame functions from original)
+    */
+    public MarioResult buildGame(MarioAgent agent, String level, int timer, int marioState, boolean visuals) {
+        return this.resetGame(agent, level, timer, marioState, visuals, visuals ? 30 : 0, 2);
+    }
+
+    /**
+     * Initializes a new game level (based on gameLoop function from original)
+     * @param agent
+     * @param level
+     * @param timer
+     * @param marioState
+     * @param visuals
+     * @param fps
+     * @param scale
+     * @return
+     */
+    public MarioResult resetGame(MarioAgent agent, String level, int timer, int marioState, boolean visuals, int fps, float scale) {
+        this.visuals = visuals;
+        this.fps = fps;
+        this.setAgent(agent);
+        this.world = new MarioWorld(this.killEvents);
+        this.world.visuals = visuals;
+        this.world.initializeLevel(level, 1000 * timer);
+
+        if (visuals) {
+            this.window = new JFrame("Mario AI Framework - python");
+            this.render = new MarioRender(scale);
+            this.window.setContentPane(this.render);
+            this.window.pack();
+            this.window.setResizable(false);
+            this.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            this.render.init();
+            this.window.setVisible(true);
+            this.world.initializeVisuals(this.render.getGraphicsConfiguration());
+        }
+
+        this.world.mario.isLarge = marioState > 0;
+        this.world.mario.isFire = marioState > 1;
+        this.world.update(new boolean[MarioActions.numberOfActions()]);
+        this.currentTime = System.currentTimeMillis();
+
+        //initialize graphics
+    
+        if (visuals) {
+            this.renderTarget = this.render.createVolatileImage(MarioGame.width, MarioGame.height);
+            this.backBuffer = this.render.getGraphics();
+            this.currentBuffer = renderTarget.getGraphics();
+            this.render.addFocusListener(this.render);
+        }
+
+        this.agentTimer = new MarioTimer(MarioGame.maxTime);
+        this.agent.initialize(new MarioForwardModel(this.world.clone()), this.agentTimer);
+
+        this.gameEvents = new ArrayList<>();
+        this.agentEvents = new ArrayList<>();
+
+        return new MarioResult(this.world, this.gameEvents, this.agentEvents);
+    }
+
+    /** Step function */
+
+    public StepResult stepGame() {
+        // Run this if we're using an A* or User as input action
+
+        boolean[] actions = this.agent.getActions(new MarioForwardModel(this.world.clone()), agentTimer); // replace with agent action
+        return stepGame(actions);
+    }
+
+    public StepResult stepGame(boolean[] actions) {
+        // Run this to step game from python code
+
+        MarioForwardModel model = new MarioForwardModel(this.world);
+            if (!this.pause) {
+
+                //get actions
+                agentTimer = new MarioTimer(MarioGame.maxTime);
+                if (MarioGame.verbose) {
+                    if (agentTimer.getRemainingTime() < 0 && Math.abs(agentTimer.getRemainingTime()) > MarioGame.graceTime) {
+                        System.out.println("The Agent is slowing down the game by: "
+                                + Math.abs(this.agentTimer.getRemainingTime()) + " msec.");
+                    }
+                }
+
+                // update world
+                this.world.update(actions);
+                this.gameEvents.addAll(this.world.lastFrameEvents);
+                this.agentEvents.add(new MarioAgentEvent(actions, this.world.mario.x,
+                        this.world.mario.y, (this.world.mario.isLarge ? 1 : 0) + (this.world.mario.isFire ? 1 : 0),
+                        this.world.mario.onGround, this.world.currentTick));
+            }
+
+            // Gym setup based on https://github.com/Kautenja/gym-super-mario-bros 
+            // get obs
+            int[][] obs = model.getScreenCompleteObservation(0,0);
+            int[] pos = model.getMarioScreenTilePos();
+            obs[Math.min(pos[0], 15)][Math.min(pos[1],15)] = 99;
+
+            // get reward
+
+            float vx = world.mario.xa; // instantaneous velocity 
+            int d = world.mario.alive ? 0 : -15; // penalty for dying           
+            float f = model.getCompletionPercentage() == 1? 15 : 0; // reward for full completion
+            int c = 4; // assume difference in clock is 4 frames due to 4-frame skip
+            
+            // Agent is rewarded for moving to the right, while not dying, and doing so as quick as possible
+            float reward = vx + d + f - c; 
+            reward = reward > 15 ? 15 : (reward < -15 ? -15 : reward); // clip reward between +/- 15
+
+            // episode is complete if we get to the castle, die, or run out of time
+            boolean done = world.gameStatus ==  GameStatus.WIN || world.gameStatus == GameStatus.LOSE || world.currentTimer <= 0;
+
+            //render world
+            if (this.visuals) {
+                this.render.renderWorld(this.world, this.renderTarget, this.backBuffer, this.currentBuffer);
+            }
+
+            //check if delay needed
+            if (this.getDelay(this.fps) > 0) {
+                try {
+                    this.currentTime += this.getDelay(this.fps);
+                    Thread.sleep(Math.max(0, this.currentTime - System.currentTimeMillis()));
+                } catch (InterruptedException e) {
+                    // break;
+                }
+            }
+            
+        return new StepResult(obs, reward, done, "");
+
+    }
+
+    public void killGame() {
+        // this.window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING));
+        this.window.dispose();
+    }
+
 }
