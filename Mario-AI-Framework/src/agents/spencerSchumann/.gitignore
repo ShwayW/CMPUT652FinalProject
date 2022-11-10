@@ -1,0 +1,15 @@
+/Agent.class
+/BumpableEdge.class
+/Edge.class
+/Enemy.class
+/EnemyEdge.class
+/EnemySimulator.class
+/MarioState.class
+/MotionSimulator.class
+/MovementPlanner$BestTarget.class
+/MovementPlanner.class
+/PlanRunner$Event.class
+/PlanRunner.class
+/Scene.class
+/Tiles$Column.class
+/Tiles.class
