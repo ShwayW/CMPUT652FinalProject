@@ -6,6 +6,12 @@
 from math import floor
 import numpy as np
 
+## function to initialize the parameters randomly
+def random_params_by_size(n, m, key, scale=1e-2):
+    if (m is None):
+        return scale * jrandom.normal(key, (n,))
+    return scale * jrandom.normal(key, (n, m))
+
 ## function to get unique tokens from the dataset
 def getTokens(lines: list) -> list:
     tokens = []

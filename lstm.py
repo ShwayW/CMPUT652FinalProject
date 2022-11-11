@@ -13,7 +13,6 @@ from jax import random as jrandom
 from jax.scipy.special import logsumexp
 
 # others
-
 import os
 import pandas as pd
 import opendatasets as od
@@ -22,17 +21,7 @@ from random import randint
 import pickle
 from aux import *
 
-## Download the dataset
-############ DO NOT PUSH DATASET TO GITHUB #################
-#od.download("https://www.kaggle.com/datasets/pariza/bbc-news-summary")
-
 ## Implementation of components of LSTM
-# initialize the parameters randomly
-def random_params_by_size(n, m, key, scale=1e-2):
-    if (m is None):
-        return scale * jrandom.normal(key, (n,))
-    return scale * jrandom.normal(key, (n, m))
-
 # an individual lstm cell
 @jit
 def lstm_cell(params, prevCell, prevHidden, curToken):
@@ -82,9 +71,12 @@ def accuracy(params, prevCell, prevHidden, curInput, targetVec, tokens, verbose)
 	target_char = vec2str(targetVec, tokens)
 	return pred_token == target_token, pred_char, target_char
 
+
 # function optimizations
 jitValueGradLstmSeqLoss = jit(value_and_grad(lstm_seq_loss, argnums = 0))
 
+
+# a single training step
 def train_step(step_i, opt_state, prevCell, prevHidden, instance, lstmSize):
 	# update the parameters
 	totalLoss = 0
@@ -96,72 +88,17 @@ def train_step(step_i, opt_state, prevCell, prevHidden, instance, lstmSize):
 		totalLoss += loss
 
 		# update the parameters using adam and get the optimized state
-		opt_state = jit(opt_update)(step_i, grads, opt_state)
+		opt_state = opt_update(step_i, grads, opt_state)
 		params = get_params(opt_state)
 
 		# get the next cell and hidden
 		prevCell, prevHidden = lstm_seq(params, prevCell, prevHidden,
 				instance[tokenI : tokenI + lstmSize])
-
 	return totalLoss, opt_state
 
 
-
-if (__name__ == '__main__'):
-	## Data preprocessing
-	## Preprocess the dataset
-	# the path name
-	path = './bbc-news-summary/BBC News Summary/News Articles/tech/'
-
-	trainVec, testVec, tokens, seqMaxLen = textDataPreProc(path)
-
-	print('size of training data: ', len(trainVec))
-	print('size of test data: ', len(testVec))
-	print('maximum instance length: ', seqMaxLen)
-
-	##################### Training of the LSTM model
-	# model save path
-	modelSavePath = './models/'
-
-	# number of epoches to train for
-	numEpoches = 1
-
-	# custom the lstm size
-	lstmSize = 200
-
-	# size of the tokens
-	tokensSize = len(tokens)
-
-	# set the dimension of the parameters
-	n = tokensSize
-	m = tokensSize
-
-	# the verbose
-	verbose = False
-
-	# initialize the first cell state
-	cell_init = jnp.zeros([n,], dtype = float)
-
-	# initialize the first hidden value
-	hidden_init = jnp.zeros([m,], dtype = float)
-
-	# initialize random parameters w and bias b
-	params = []
-	for tokenI in range(lstmSize):
-	    param = []
-	    for gateI in range(4):
-	        w = random_params_by_size(n, m, jrandom.PRNGKey(0))
-	        b = random_params_by_size(n, None, jrandom.PRNGKey(0))
-	        param.append([w, b])
-	    params.append(param)
-
-	# use adam optimizer
-	opt_init, opt_update, get_params = jax_opt.adam(0.001)
-	opt_state = opt_init(params)
-
-
-	#params = pickle.load(open(modelSavePath + "lstm_model.p", "rb"))
-
+# To train the LSTM model
+def train(numEpoches, trainVec, params, cell_init, hidden_init, lstmSize, opt_state):
 	# training epoches
 	for epochI in range(numEpoches):
 		## Train
@@ -215,9 +152,79 @@ if (__name__ == '__main__'):
 				print()
 				
 				# stop training on this instance if average accuracy is good enough
-				if (avgAcc > 0.95): break
+				if (avgAcc > 0.99): break
+	return params
 
-			pickle.dump(params, open(modelSavePath + "lstm_model.p", "wb"))
+
+
+if (__name__ == '__main__'):
+	## Download the dataset
+	############ DO NOT PUSH DATASET TO GITHUB #################
+	#od.download("https://www.kaggle.com/datasets/pariza/bbc-news-summary")
+
+	## Data preprocessing
+	## Preprocess the dataset
+	# the path name
+	path = './bbc-news-summary/BBC News Summary/News Articles/tech/'
+
+	trainVec, testVec, tokens, seqMaxLen = textDataPreProc(path)
+
+	print('size of training data: ', len(trainVec))
+	print('size of test data: ', len(testVec))
+	print('maximum instance length: ', seqMaxLen)
+
+	##################### Training of the LSTM model
+	# model save path
+	modelSavePath = './models/'
+
+	# number of epoches to train for
+	numEpoches = 1
+
+	# custom the lstm size
+	lstmSize = 200
+
+	# size of the tokens
+	tokensSize = len(tokens)
+
+	# set the dimension of the parameters
+	n = tokensSize
+	m = tokensSize
+
+	# the verbose
+	verbose = False
+
+	# initialize the first cell state
+	cell_init = jnp.zeros([n,], dtype = float)
+
+	# initialize the first hidden value
+	hidden_init = jnp.zeros([m,], dtype = float)
+
+	# initialize random parameters w and bias b
+	params = []
+	for tokenI in range(lstmSize):
+	    param = []
+	    for gateI in range(4):
+	        w = random_params_by_size(n, m, jrandom.PRNGKey(0))
+	        b = random_params_by_size(n, None, jrandom.PRNGKey(0))
+	        param.append([w, b])
+	    params.append(param)
+
+	# use adam optimizer
+	opt_init, opt_update, get_params = jax_opt.adam(0.001)
+
+	# jit the optimizer functions
+	opt_init = jit(opt_init)
+	opt_update = jit(opt_update)
+	get_params = jit(get_params)
+
+	# get the initial opt_state
+	opt_state = opt_init(params)
+
+
+	#params = pickle.load(open(modelSavePath + "lstm_model.pickle", "rb"))
+	params = train(numEpoches, trainVec, params, cell_init, hidden_init, lstmSize, opt_state)
+	pickle.dump(params, open(modelSavePath + "lstm_model.pickle", "wb"))
+	
 			
 			
 			
