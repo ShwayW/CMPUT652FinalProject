@@ -1,10 +1,11 @@
 from lstm import getTokens, toOneHot
+import numpy as np
 
 # Process the level and path data into a form that can be used by the LSTM 
 
 def processPathAndLevel():
 
-	level = "lvl-1s.txt"
+	level = "lvl-1sa.txt"
 	rootDir = "Mario-AI-Framework/src/"
 	levelDir = "levels/original/"
 	pathDir = "Data/Justin/"
@@ -25,8 +26,10 @@ def processPathAndLevel():
 	pathTokens = getTokens(pathLines)
 	oneHotPath = toOneHot(pathLines, pathTokens)
 
-	return oneHotLine, oneHotPath
+	fullDataset = [np.hstack([oneHotLine[0], oneHotPath[0]])]
+	return fullDataset
 
 
 if __name__ == '__main__':
-	processPathAndLevel()
+	fullDataset = processPathAndLevel()
+	print(fullDataset)
