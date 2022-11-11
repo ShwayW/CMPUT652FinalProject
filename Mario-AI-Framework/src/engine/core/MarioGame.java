@@ -304,14 +304,14 @@ public class MarioGame {
             }
 
             //System.out.println("Current state of agent " + model.getMarioScreenTilePos()[0] + ", " +model.getMarioScreenTilePos()[1]);
-            System.out.println("Current Mario Position " + this.world.mario.x +", " + this.world.mario.y);
+            //System.out.println("Current Mario Position " + this.world.mario.x +", " + this.world.mario.y);
 
             int screenX = (int) (this.world.mario.x  / 16);
             int screenY = (int) (this.world.mario.y / 16);
             String marioX = Integer.toString(screenX);
             String marioY = Integer.toString(screenY); 
             String marioCoordinates = marioX + "," + marioY+"\n"; 
-            System.out.println(marioCoordinates);
+            //System.out.println(marioCoordinates);
             try{
                 FileWriter myWriter = new FileWriter("positionData.txt", true);
                 myWriter.write(marioCoordinates);

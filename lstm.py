@@ -1,17 +1,17 @@
 ## Imports
 # jax related
-import jax.numpy as jnp
-import jax.nn as jnn
-from jax import grad, jit, vmap, lax, value_and_grad
-from jax import random as jrandom
-from jax.scipy.special import logsumexp
+# import jax.numpy as jnp
+# import jax.nn as jnn
+# from jax import grad, jit, vmap, lax, value_and_grad
+# from jax import random as jrandom
+# from jax.scipy.special import logsumexp
 
 # others
 from math import floor
 import numpy as np
 import os
 import pandas as pd
-import opendatasets as od
+#import opendatasets as od
 import time
 
 ## Download the dataset
@@ -91,9 +91,9 @@ def vec2str(vec, tokens):
     return outputStr
 
 # pre-compile costly functions
-jitUpdate = jit(lstm_cell_update)
-jitLoss = jit(lstm_cell_loss)
-jitAccuracy = jit(accuracy)
+# jitUpdate = jit(lstm_cell_update)
+# jitLoss = jit(lstm_cell_loss)
+# jitAccuracy = jit(accuracy)
 
 if __name__ == '__main__':
 	## Data preprocessing

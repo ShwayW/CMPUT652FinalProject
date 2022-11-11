@@ -15,7 +15,7 @@ def main():
 			y = int(y)
 			if(y<=maxHeight-1):
 				levelData[y][x] = 'x'
-	f = open("usersPath.txt", "w")
+	f = open("Data/Justin/lvl-4.txt", "w")
 	for i in range(maxHeight): 
 		level = levelData[i]
 		if(i<maxHeight-1):
