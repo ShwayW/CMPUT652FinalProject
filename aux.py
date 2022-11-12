@@ -5,21 +5,24 @@
 ## Imports
 from math import floor
 import numpy as np
+from jax import random as jrandom
 
 ## function to initialize the parameters randomly
-def random_params_by_size(n, m, key, scale=1e-2):
-    if (m is None):
-        return scale * jrandom.normal(key, (n,))
-    return scale * jrandom.normal(key, (n, m))
+def random_params_by_size(n, m, key=jrandom.PRNGKey(0), scale=1e-2):
+	if (m is None):
+		return scale * jrandom.normal(key, (n,))
+	elif (n is None):
+		return scale * jrandom.normal(key, (m,))
+	return scale * jrandom.normal(key, (n, m))
 
 ## function to get unique tokens from the dataset
 def getTokens(lines: list) -> list:
-    tokens = []
-    for line in lines:
-        for t in line:
-            if (t not in tokens):
-                tokens.append(t)
-    return tokens
+	tokens = []
+	for line in lines:
+		for t in line:
+			if (t not in tokens):
+				tokens.append(t)
+	return tokens
 
 ## function to convert data to one hot vectors
 def toOneHot(lines: list, tokens: list) -> list:

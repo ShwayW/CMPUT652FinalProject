@@ -89,71 +89,8 @@ def unembedding(token_encoding, unemb_matrix):
 	return jnn.softmax(jnp.dot(unemb_matrix, token_encoding))
 
 
-# the decoder-only transformer
-@jit
-def decoder_only_transformer(seq, params, vocabSize, seqMaxLen, L, H, d_enc, d_mlp, d_attn, d_x, d_z, d_mid, d_out):
-	# seq is the input training sequence, is also contains the hard-coded token embedding
-	# pos_matrix is the positional encoding matrix
-	# params contains the weights for all the multi-head attention layers 
-	############### Content of params ######################
-	# params = [W_enc, W_pos, W_mhattn, scale_l_fin, W_u]
-	# W_mhattn = [W_l, scale_l_fst, scale_l_scd, W_l_mlp_fst, b_l_mlp_fst, W_l_mlp_scd, b_l_mlp_scd for l in range(L)]
-	# W_l = [
-	#		[[W_q, b_q, W_k, b_k, W_v, b_v] for h in range(H)]
-	#		[W_o, b_o]
-	#		]
-	
-	############### Preliminaries ##########################
-	# extract params
-	[W_enc, W_pos, W_mhattn, scale_l_fin, W_u] = params
-	
-	# initialize the mask
-	# mask[t, t_prime] = [t <= t_prime] is equivalent to below:
-	mask = jnp.ones([seq_len, seq_len])
-	for t in range(1, seq_len):
-		mask = mask.at[t, :t].set(0)
-	
-	############### Transformer implementation #############
-	# get the length of the sequence
-	seq_len = len(seq)
-	
-	# convert the sequence into token + positional embeddings
-	X = W_enc[:, seq[0]] + W_pos[:, 0]
-	for t in range(1, seq_len):
-		X = jnp.concatenate(X, W_enc[:, seq[t]] + W_pos[:, t], axis = 1)
-	
-	# for each layer of the transformer, compute on the encoded sequence X
-	for l in range(L):
-		# extract W_mhattn[l]
-		[W_l, scale_l_fst, scale_l_scd, W_l_mlp_fst, b_l_mlp_fst, W_l_mlp_scd, b_l_mlp_scd] = W_mhattn[l]
-		
-		# apply the first layer norm to X
-		X_cp = rms_layer_norm(X[:, 0], scale_l_fst)
-		for t in range(1, seq_len):
-			X_cp = jnp.concatenate(X_cp, rms_layer_norm(X[:, t], scale_l_fst), axis = 1)
-		
-		# apply multi-head attention
-		X = X + mhAttention(X_cp, W_l, mask)
-		
-		# apply the second layer norm to X
-		X_cp = rms_layer_norm(X[:, 0], scale_l_scd)
-		for t in range(1, seq_len):
-			X_cp = jnp.concatenate(X_cp, rms_layer_norm(X[:, t], scale_l_scd), axis = 1)
-			
-		# apply GELU and MLP's to X_cp
-		Gelu = jnn.gelu(jnp.dot(W_l_mlp_fst, X_cp) + b_l_mlp_fst)
-		X = X + jnp.dot(W_l_mlp_scd, Gelu) + b_l_mlp_scd
-		
-	# apply the final layer norm to X
-	X = rms_layer_norm(X[:, 0], scale_l_fin)
-	for t in range(1, seq_len):
-		X = jnp.concatenate(X, rms_layer_norm(X[:, t], scale_l_fin), axis = 1)
-		
-	# apply unembedding and softmax
-	return jnn.softmax(jnp.dot(W_u, X))
-
-
 # initialize the parameters for the transformer model
+@jit
 def init_params(vocabSize, seqMaxLen, L, H, d_enc, d_mlp, d_attn, d_x, d_z, d_mid, d_out):
 	# token encoding and positional encoding
 	W_enc = random_params_by_size(d_enc, vocabSize)
@@ -197,9 +134,82 @@ def init_params(vocabSize, seqMaxLen, L, H, d_enc, d_mlp, d_attn, d_x, d_z, d_mi
 	
 	# unembedding matrix
 	W_u = random_params_by_size(vocabSize, d_enc)
-		
+	
+	# return the parameters as a list
 	return [W_enc, W_pos, W_mhattn, scale_l_fin, W_u]
+
+
+# the decoder-only transformer
+@jit
+def decoder_only_transformer(seq, params, vocabSize, seqMaxLen, L, H, d_enc, d_mlp, d_attn, d_x, d_z, d_mid, d_out):
+	# seq is the input training sequence, is also contains the hard-coded token embedding
+	# pos_matrix is the positional encoding matrix
+	# params contains the weights for all the multi-head attention layers 
+	############### Content of params ######################
+	# params = [W_enc, W_pos, W_mhattn, scale_l_fin, W_u]
+	# W_mhattn = [W_l, scale_l_fst, scale_l_scd, W_l_mlp_fst, b_l_mlp_fst, W_l_mlp_scd, b_l_mlp_scd for l in range(L)]
+	# W_l = [
+	#		[[W_q, b_q, W_k, b_k, W_v, b_v] for h in range(H)]
+	#		[W_o, b_o]
+	#		]
+	
+	############### Preliminaries ##########################
+	# unpack params
+	[W_enc, W_pos, W_mhattn, scale_l_fin, W_u] = params
+	
+	# initialize the mask
+	# mask[t, t_prime] = [t <= t_prime] is equivalent to below:
+	mask = jnp.ones([seq_len, seq_len])
+	for t in range(1, seq_len):
+		mask = mask.at[t, :t].set(0)
+	
+	############### Transformer implementation #############
+	# get the length of the sequence
+	seq_len = len(seq)
+	
+	# convert the sequence into token + positional embeddings
+	X = W_enc[:, seq[0]] + W_pos[:, 0]
+	for t in range(1, seq_len):
+		X = jnp.concatenate(X, W_enc[:, seq[t]] + W_pos[:, t], axis = 1)
+	
+	# for each layer of the transformer, compute on the encoded sequence X
+	for l in range(L):
+		# unpack W_mhattn[l]
+		[W_l, scale_l_fst, scale_l_scd, W_l_mlp_fst, b_l_mlp_fst, W_l_mlp_scd, b_l_mlp_scd] = W_mhattn[l]
+		
+		# apply the first layer norm to X
+		X_cp = rms_layer_norm(X[:, 0], scale_l_fst)
+		for t in range(1, seq_len):
+			X_cp = jnp.concatenate(X_cp, rms_layer_norm(X[:, t], scale_l_fst), axis = 1)
+		
+		# apply multi-head attention
+		X = X + mhAttention(X_cp, W_l, mask)
+		
+		# apply the second layer norm to X
+		X_cp = rms_layer_norm(X[:, 0], scale_l_scd)
+		for t in range(1, seq_len):
+			X_cp = jnp.concatenate(X_cp, rms_layer_norm(X[:, t], scale_l_scd), axis = 1)
 			
+		# apply GELU and MLP's to X_cp
+		Gelu = jnn.gelu(jnp.dot(W_l_mlp_fst, X_cp) + b_l_mlp_fst)
+		X = X + jnp.dot(W_l_mlp_scd, Gelu) + b_l_mlp_scd
+		
+	# apply the final layer norm to X
+	X = rms_layer_norm(X[:, 0], scale_l_fin)
+	for t in range(1, seq_len):
+		X = jnp.concatenate(X, rms_layer_norm(X[:, t], scale_l_fin), axis = 1)
+		
+	# apply unembedding and softmax
+	return jnn.softmax(jnp.dot(W_u, X))
+
+
+# Training of the transformer
+def train(dataset, params):
+	
+	
+	
+	return params
+
 	
 if (__name__ == "__main__"):
 	## Download the dataset

@@ -9,8 +9,6 @@ from functools import partial
 import jax.numpy as jnp
 import jax.nn as jnn
 from jax import grad, jit, vmap, lax, value_and_grad
-from jax import random as jrandom
-from jax.scipy.special import logsumexp
 
 # others
 import os
@@ -109,8 +107,8 @@ def train(numEpoches, trainVec, params, cell_init, hidden_init, lstmSize, opt_st
 			# skip if instance is too short
 			if (len(instance) <= lstmSize or len(instance) > lstmSize * 2): continue
 			
-			for step_i in range(1000):
-				print('on training index: ', instIndex)
+			for step_i in range(200):
+				print('on training index: ', instIndex, " step: ", step_i)
 				# a training step
 				totalLoss, opt_state = train_step(step_i, opt_state, cell_init, hidden_init, instance, lstmSize)
 
@@ -153,8 +151,20 @@ def train(numEpoches, trainVec, params, cell_init, hidden_init, lstmSize, opt_st
 				
 				# stop training on this instance if average accuracy is good enough
 				if (avgAcc > 0.99): break
+			return params
 	return params
 
+# initialize the parameters for the LSTM model
+def init_params(lstmSize, n, m):
+	params = []
+	for tokenI in range(lstmSize):
+	    param = []
+	    for gateI in range(4):
+	        w = random_params_by_size(n, m)
+	        b = random_params_by_size(n, None)
+	        param.append([w, b])
+	    params.append(param)
+	return params
 
 
 if (__name__ == '__main__'):
@@ -200,14 +210,7 @@ if (__name__ == '__main__'):
 	hidden_init = jnp.zeros([m,], dtype = float)
 
 	# initialize random parameters w and bias b
-	params = []
-	for tokenI in range(lstmSize):
-	    param = []
-	    for gateI in range(4):
-	        w = random_params_by_size(n, m, jrandom.PRNGKey(0))
-	        b = random_params_by_size(n, None, jrandom.PRNGKey(0))
-	        param.append([w, b])
-	    params.append(param)
+	params = init_params(lstmSize, n, m)
 
 	# use adam optimizer
 	opt_init, opt_update, get_params = jax_opt.adam(0.001)
