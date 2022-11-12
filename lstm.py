@@ -13,7 +13,7 @@ from jax import grad, jit, vmap, lax, value_and_grad
 # others
 import os
 import pandas as pd
-import opendatasets as od
+#import opendatasets as od
 import time
 from random import randint
 import pickle
@@ -68,7 +68,6 @@ def accuracy(params, prevCell, prevHidden, curInput, targetVec, tokens, verbose)
 	pred_char = vec2str(prevHidden, tokens)
 	target_char = vec2str(targetVec, tokens)
 	return pred_token == target_token, pred_char, target_char
-
 
 # function optimizations
 jitValueGradLstmSeqLoss = jit(value_and_grad(lstm_seq_loss, argnums = 0))
