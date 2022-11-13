@@ -19,6 +19,15 @@ from random import randint
 import pickle
 from aux import *
 
+########## Adam optimizer declaration ##############
+# use adam optimizer
+opt_init, opt_update, get_params = jax_opt.adam(0.001)
+
+# jit the optimizer functions
+opt_init = jit(opt_init)
+opt_update = jit(opt_update)
+get_params = jit(get_params)
+
 ## Implementation of components of LSTM
 # an individual lstm cell
 @jit
@@ -46,32 +55,34 @@ def lstm_seq(params, prevCell, prevHidden, curInput):
 		prevCell, prevHidden = lstm_cell(params[inputI], prevCell,
 			prevHidden, curInput[inputI])
 	return prevCell, prevHidden
+	
+# lstm improved
+@jit
+def lstm_seq_dense(params, prevCell, prevHidden, curInput):
+	for i in range(len(params[1])):
+		prevCell, prevHidden = lstm_seq(params[1][i], prevCell, prevHidden, curInput)
+		prevHidden = jnp.dot(prevHidden, params[0][i])
+	return prevCell, jnn.softmax(prevHidden)
 
 ## Implementation of the loss and update functions
 # loss of lstm cells on a given input sequence predicting the next token
 @jit
 def lstm_seq_loss(params, prevCell, prevHidden, curInput, targetOutput):
 	# curInput is a sequence
-	# targetOutput is a single token
-	assert(len(params) == len(curInput))
-	for inputI in range(len(curInput)):
-		prevCell, prevHidden = lstm_cell(params[inputI], prevCell,
-			prevHidden, curInput[inputI])
+	prevCell, prevHidden = lstm_seq_dense(params, prevCell, prevHidden, curInput)
 	return jnp.mean(jnp.absolute(prevHidden - targetOutput))
-
-# Compute accuracy
-def accuracy(params, prevCell, prevHidden, curInput, targetVec, tokens, verbose):
-	for paramI in range(len(params)):
-		prevCell, prevHidden = lstm_cell(params[paramI], prevCell, prevHidden, curInput[paramI])
-	pred_token = jnp.argmax(prevHidden, axis = 0)
-	target_token = jnp.argmax(targetVec, axis = 0)
-	pred_char = vec2str(prevHidden, tokens)
-	target_char = vec2str(targetVec, tokens)
-	return pred_token == target_token, pred_char, target_char
 
 # function optimizations
 jitValueGradLstmSeqLoss = jit(value_and_grad(lstm_seq_loss, argnums = 0))
 
+# Compute accuracy
+def accuracy(params, prevCell, prevHidden, curInput, targetVec, tokens):
+	prevCell, prevHidden = lstm_seq_dense(params, prevCell, prevHidden, curInput)
+	pred_tile_token = jnp.argmax(prevHidden, axis = 0)
+	target_tile_token = jnp.argmax(targetVec, axis = 0)
+	pred_char = vec2str(prevHidden, tokens)
+	target_char = vec2str(targetVec, tokens)
+	return pred_tile_token == target_tile_token, pred_char, target_char
 
 # a single training step
 def train_step(step_i, opt_state, prevCell, prevHidden, instance, lstmSize):
@@ -89,72 +100,74 @@ def train_step(step_i, opt_state, prevCell, prevHidden, instance, lstmSize):
 		params = get_params(opt_state)
 
 		# get the next cell and hidden
-		prevCell, prevHidden = lstm_seq(params, prevCell, prevHidden,
+		prevCell, prevHidden = lstm_seq_dense(params, prevCell, prevHidden,
 				instance[tokenI : tokenI + lstmSize])
 	return totalLoss, opt_state
 
 
 # To train the LSTM model
-def train(numEpoches, trainVec, params, cell_init, hidden_init, lstmSize, opt_state):
-	# training epoches
-	for epochI in range(numEpoches):
-		## Train
-		for instIndex in range(len(trainVec)):
+def train(numEpoches, trainVec, params, cell_init, hidden_init, lstmSize, tokens, modelSavePath):
+	# get the initial opt_state
+	opt_state = opt_init(params)
+	
+	## Train
+	for instIndex in range(len(trainVec)):
+		# training epoches
+		for epochI in range(numEpoches):
 			# get a training instance
 			instance = trainVec[instIndex]
 			
 			# skip if instance is too short
-			if (len(instance) <= lstmSize or len(instance) > lstmSize * 2): continue
+			if (len(instance) <= lstmSize): continue
 			
-			for step_i in range(200):
-				print('on training index: ', instIndex, " step: ", step_i)
-				# a training step
-				totalLoss, opt_state = train_step(step_i, opt_state, cell_init, hidden_init, instance, lstmSize)
+			print('on training index: ', instIndex, " epochI: ", epochI)
+			# a training step
+			totalLoss, opt_state = train_step(epochI, opt_state, cell_init, hidden_init, instance, lstmSize)
 
-				# get the trained parameters from the optimized state
-				params = get_params(opt_state)
+			# get the trained parameters from the optimized state
+			params = get_params(opt_state)
+			
+			# save the result on the fly
+			pickle.dump(params, open(modelSavePath, "wb"))
 
-				## See the performance
-				totalAcc = 0
+			## See the performance
+			totalAcc = 0
 
-				# initialize the cell and hidden
-				prevCell = cell_init
-				prevHidden = hidden_init
+			# initialize the cell and hidden
+			prevCell = cell_init
+			prevHidden = hidden_init
 
-				# initialize the predicted sequence and the target sequence
-				pred_seq = ''
-				target_seq = ''
-				
-				# test the training performance
-				for tokenI in range(0, len(instance) - lstmSize - 1):
-					acc, pred_char, target_char = accuracy(params, prevCell, prevHidden,
-						instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1],
-						tokens, verbose)
-					totalAcc += acc
-					pred_seq += pred_char
-					target_seq += target_char
+			# initialize the predicted sequence and the target sequence
+			pred_tiles = ''
+			target_tiles = ''
+			
+			# test the training performance
+			for tokenI in range(0, len(instance) - lstmSize - 1):
+				acc, pred, target = accuracy(params, prevCell, prevHidden,
+					instance[tokenI : tokenI + lstmSize], instance[tokenI + lstmSize + 1],
+					tokens)
+				totalAcc += acc
+				pred_tiles += pred
+				target_tiles += target
 
-					# get the next cell and hidden
-					prevCell, prevHidden = lstm_seq(params, prevCell,
-						prevHidden, instance[tokenI : tokenI + lstmSize])
-				
-				# compute the average accuracy
-				avgAcc = float(totalAcc) / (tokenI + 1)
-				
-				# print the loss and accuracy
-				print("loss: ", totalLoss)
-				print("Accuracy: ", avgAcc)
-				print(pred_seq)
-				print(target_seq)
-				print()
-				
-				# stop training on this instance if average accuracy is good enough
-				if (avgAcc > 0.99): break
-			return params
+				# get the next cell and hidden
+				prevCell, prevHidden = lstm_seq_dense(params, prevCell,
+					prevHidden, instance[tokenI : tokenI + lstmSize])
+			
+			# compute the average accuracy
+			avgAcc = float(totalAcc) / (tokenI + 1)
+			
+			# print the loss and accuracy
+			print("loss: ", totalLoss)
+			print("Accuracy: ", avgAcc)
+			print(pred_tiles)
+			print(target_tiles)
+			print()
+			if (avgAcc > 0.95): break
 	return params
 
 # initialize the parameters for the LSTM model
-def init_params(lstmSize, n, m):
+def init_lstm_params(lstmSize, n, m):
 	params = []
 	for tokenI in range(lstmSize):
 	    param = []
@@ -180,17 +193,22 @@ if (__name__ == '__main__'):
 
 	print('size of training data: ', len(trainVec))
 	print('size of test data: ', len(testVec))
+	print('size of tokens: ', len(tokens))
 	print('maximum instance length: ', seqMaxLen)
 
 	##################### Training of the LSTM model
 	# model save path
-	modelSavePath = './models/'
+	modelSavePath = './models/lstm_model_text.pickle'
+
+	# flag for training again
+	trainAgain = True
 
 	# number of epoches to train for
-	numEpoches = 1
+	numEpoches = 200
 
 	# custom the lstm size
-	lstmSize = 200
+	lstmSize = 20
+	denseSize = 3
 
 	# size of the tokens
 	tokensSize = len(tokens)
@@ -199,9 +217,6 @@ if (__name__ == '__main__'):
 	n = tokensSize
 	m = tokensSize
 
-	# the verbose
-	verbose = False
-
 	# initialize the first cell state
 	cell_init = jnp.zeros([n,], dtype = float)
 
@@ -209,25 +224,21 @@ if (__name__ == '__main__'):
 	hidden_init = jnp.zeros([m,], dtype = float)
 
 	# initialize random parameters w and bias b
-	params = init_params(lstmSize, n, m)
+	if (trainAgain):
+		dense_params = []
+		lstm_params = []
+		for i in range(denseSize):
+			dense_params.append(random_params_by_size(n, m))
+			lstm_params.append(init_lstm_params(lstmSize, n, m))
+		params = [dense_params, lstm_params]
+	else:
+		params = pickle.load(open(modelSavePath, "rb"))
 
-	# use adam optimizer
-	opt_init, opt_update, get_params = jax_opt.adam(0.001)
-
-	# jit the optimizer functions
-	opt_init = jit(opt_init)
-	opt_update = jit(opt_update)
-	get_params = jit(get_params)
-
-	# get the initial opt_state
-	opt_state = opt_init(params)
-
-
-	#params = pickle.load(open(modelSavePath + "lstm_model.pickle", "rb"))
-	params = train(numEpoches, trainVec, params, cell_init, hidden_init, lstmSize, opt_state)
-	pickle.dump(params, open(modelSavePath + "lstm_model.pickle", "wb"))
+	# training start here
+	params = train(numEpoches, trainVec, params, cell_init, hidden_init, lstmSize, tokens, modelSavePath)
 	
-			
-			
-			
-
+	# save results here
+	pickle.dump(params, open(modelSavePath, "wb"))
+	
+	
+	

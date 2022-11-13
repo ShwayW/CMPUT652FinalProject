@@ -54,6 +54,14 @@ def getMaxSeqLen(lines: list) -> int:
 # Nov. 1, 2022
 def vec2str(vec, tokens):
 	return tokens[np.argmax(vec, axis = 0)]
+	
+## output vector to level tile transformation
+# Shway Wang
+# Nov. 12, 2022
+def vec2tile(vec, tokens):
+	ai = np.argmax(vec[:-2], axis = 0)
+	bi = np.argmax(vec[-2:], axis = 0)
+	return tokens[ai], tokens[len(vec[:-2]) + bi]
 
 ## preprocesses the text data
 # Shway Wang
@@ -100,6 +108,7 @@ def textDataPreProc(path):
 	
 # Process the level and path data into a form that can be used by the LSTM 
 # Justin Stevens
+# modified by Shway Wang
 def processPathAndLevel():
 	levelData = open("Mario-AI-Framework/src/levels/original/lvl-1sa.txt", "r")
 	pathData = open("Mario-AI-Framework/src/Data/Justin/lvl-1sa.txt", "r")
@@ -109,12 +118,20 @@ def processPathAndLevel():
 	pathLines = pathData.readlines()
 
 	tokens = getTokens(levelLines)
-	oneHotLine = toOneHot(levelLines, tokens)[0]
+	oneHotLine = toOneHot(levelLines, tokens)
 	
 	pathTokens = getTokens(pathLines)
-	oneHotPath = toOneHot(pathLines, pathTokens)[0]
+	oneHotPath = toOneHot(pathLines, pathTokens)
 
-	return np.hstack([oneHotLine, oneHotPath])
+	tokens.extend(pathTokens)
+	
+	# the combined lines
+	lines = [np.hstack([oneHotLine[0][:100], oneHotPath[0][:100]])]
+	
+	# get the maximum sequence length
+	seqMaxLen = getMaxSeqLen(lines)
+	
+	return lines, tokens, seqMaxLen
 	
 	
 	
