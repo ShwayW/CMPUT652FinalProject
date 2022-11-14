@@ -2,19 +2,29 @@
 
 
 def main():
-	#directory = "Data/Justin/"
-	directory = "levels/original/"
-	level = "lvl-1"
+	#directory = "Data/Completionist/"
+	directory = "Data/Justin/"
+	#directory = "levels/original/"
+	level = "bogusData"
 
 	# Load in the input path data as a 2d array and output it in a snake format in two different ways
 	source = directory+level+".txt"
-	destination = directory+level+"sa.txt"
+
+	reversible = False
+
+	if(reversible):
+		destination = directory+level+"sa.txt"
+		top = False	
+	else:
+		destination = directory+level+"s.txt"
+		top = True
+
 	f = open(source, "r")
 	fs = open(destination, "w")
 
 	lines = f.readlines()
 
-	top = False	
+
 	maxHeight = 16
 	maxLength = len(lines[maxHeight-1])
 
