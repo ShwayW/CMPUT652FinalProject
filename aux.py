@@ -126,7 +126,7 @@ def processPathAndLevel():
 	tokens.extend(pathTokens)
 	
 	# the combined lines
-	lines = [np.hstack([oneHotLine[0][:100], oneHotPath[0][:100]])]
+	lines = [np.hstack([oneHotLine[0], oneHotPath[0]])]
 	
 	# get the maximum sequence length
 	seqMaxLen = getMaxSeqLen(lines)
