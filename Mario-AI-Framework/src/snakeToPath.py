@@ -3,12 +3,13 @@
 
 def main():
 
-	reversible = True 
-	directory = "Data/Completionist/"
+	reversible = False
+	directory = "Data/Output/" 
+	#directory = "Data/Completionist/"
 	#directory = "Data/Justin/"
 	maxHeight = 16
 
-	baseLevel = "lvl-1s"
+	baseLevel = "example7"
 	#directory = "levels/original/"
 	if(reversible):
 		level = baseLevel+"a"
