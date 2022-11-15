@@ -1,0 +1,16 @@
+-X----------------------------------------------------------------------------------------------------------------X-X-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-X----------------------------------
+-X-X-X------------------------------------------------------------------------------------------------------X-X-X-X-X-X-X-X-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-X-X-X-X-X-X-X----------------------------
+-X-X-X-X-X-X--------------------------------------------------------------------------------------------X-X-X-X-X-X-X-X-X-X-X-X-XXXXXXXXXXXXXXXXXXXXXXXXXX-X-X-X-X-X-X-X-X-X-X-X-X-X----------------------
+-X-X-X-X-X-X-X-X-X--------------------------------------------------------------------------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XXXXXXXXXXXXXX-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X----------------
+---X-X-X-X-X-X-X-X-X-X-X--------------------------------------------------------------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XXXXXXXX-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X----------
+-X-X-X-X-X-X-X-X-X-X-X-X-X-X------------------------------------------------------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X------
+-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X------------------------------------------------X---X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X--------------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X
+---X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X--------------------------------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X------------------------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X
+-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X--------------------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X--------------------------------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X
+---X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X--------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X------------------------------------------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X
+-------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X----X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X----------------------------------------------------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X
+-------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XXXXXXXXXX-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X--------------------------------------------------------------------X-X-X-X-X-X-X-X-X-X-X-X-X
+-----------------X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XXXXXXXXXXXXXXXXXXXXXX-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X------------------------------------------------------------------------------X-X-X-X-X-X-X-X-X-X-X
+---------------------X-X-X-X-X-X-X-X-X-X-X-X-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-X-X-X-X-X-X-X-X-X-X-X--------------------------------------------------------------------------------------X-X-X-X-X-X-X-X-X
+-----------------------X-X-X-X-X-X-X-X-X-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-X-X-X-X-X-X----------------------------------------------------------------------------------------------X-X-X-X-X-X-X
+-----------------------------X-X-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-X--------------------------------------------------------------------------------------------------------X-X-X-X
