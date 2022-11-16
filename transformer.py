@@ -20,6 +20,15 @@ from random import randint
 import pickle
 from aux import *
 
+########## Adam optimizer declaration ##############
+# use adam optimizer
+opt_init, opt_update, get_params = jax_opt.adam(0.001)
+
+# jit the optimizer functions
+opt_init = jit(opt_init)
+opt_update = jit(opt_update)
+get_params = jit(get_params)
+
 ## Implementation of components of the DTransformer
 # token embedding
 @jit
@@ -35,19 +44,16 @@ def pos_embedding(pos, W_p):
 # computes a single (masked) self- or cross- attention head
 @jit
 def attention(primary_seq, qkv, mask):
-	# qkv[0] is W_query, b_query
-	# qkv[1] is W_key, b_key
-	# qkv[2] is W_value, b_value
-	query = jnp.dot(qkv[0][0], primary_seq) + qkv[0][1]
-	key = jnp.dot(qkv[1][0], primary_seq) + qkv[1][1]
-	value = jnp.dot(qkv[2][0], primary_seq) + qkv[2][1]
+	# qkv[0:2] is W_query, b_query
+	# qkv[2:4] is W_key, b_key
+	# qkv[4:6] is W_value, b_value
+	query = jnp.dot(qkv[0], primary_seq) + jnp.sum(qkv[1])
+	key = jnp.dot(qkv[2], primary_seq) + jnp.sum(qkv[3])
+	value = jnp.dot(qkv[4], primary_seq) + jnp.sum(qkv[5])
 	score = jnp.dot(jnp.transpose(key), query)
 	
 	# apply the mask
-	for i in range(len(mask)):
-		for j in range(len(mask[i])):
-			if (not mask[i, j]):
-				score[i, j] = -jnp.Inf
+	score = jnp.multiply(score, mask)
 	
 	# return the candidate value
 	return jnp.dot(value, jnn.softmax(score/jnp.sqrt(len(key))))
@@ -68,11 +74,12 @@ def mhAttention(primary_seq, W_l, mask):
 	
 	# Thus, H = len(W_l[0])
 	# multi-head attention loop
-	cands = attention(primary_seq, W_l[0][0], mask)
-	for h in range(1, len(W_l[0])):
+	cands = []
+	for h in range(0, len(W_l[0])):
 		cand = attention(primary_seq, W_l[0][h], mask)
-		cands = jnp.concatentate((cands, cand), axis = 0)
-	return jnp.dot(W_l[1][0], cands) + W_l[1][1]
+		cands.extend(cand)
+	cands = jnp.asarray(cands)
+	return jnp.dot(W_l[1][0], cands) + jnp.sum(W_l[1][1])
 
 
 # root mean square layer normalization: mean and offset are set to 0
@@ -89,8 +96,76 @@ def unembedding(token_encoding, unemb_matrix):
 	return jnn.softmax(jnp.dot(unemb_matrix, token_encoding))
 
 
-# initialize the parameters for the transformer model
+# the decoder-only transformer
 @jit
+def decoder_only_transformer(seq, params):
+	# seq is the input training sequence, is also contains the hard-coded token embedding
+	# pos_matrix is the positional encoding matrix
+	# params contains the weights for all the multi-head attention layers 
+	############### Content of params ######################
+	# params = [W_enc, W_pos, W_mhattn, scale_l_fin, W_u]
+	# W_mhattn = [W_l, scale_l_fst, scale_l_scd, W_l_mlp_fst, b_l_mlp_fst, W_l_mlp_scd, b_l_mlp_scd for l in range(L)]
+	# W_l = [
+	#		[[W_q, b_q, W_k, b_k, W_v, b_v] for h in range(H)]
+	#		[W_o, b_o]
+	#		]
+	
+	############### Preliminaries ##########################
+	# get the length of the sequence
+	seq_len = len(seq)
+	
+	# unpack params
+	[W_enc, W_pos, W_mhattn, scale_l_fin, W_u] = params
+	
+	# initialize the mask
+	# mask[t, t_prime] = [t <= t_prime] is equivalent to below:
+	mask = jnp.ones([seq_len, seq_len])
+	for t in range(1, seq_len):
+		mask = mask.at[t, :t].set(-jnp.inf)
+	
+	############### Transformer implementation #############
+	# convert the sequence into token + positional embeddings
+	X = []
+	for t in range(0, seq_len):
+		X.append(W_enc[:, seq[t]] + W_pos[:, t])
+	X = jnp.asarray(X).T
+	
+	# for each layer of the transformer, compute on the encoded sequence X
+	for l in range(len(W_mhattn)):
+		# unpack W_mhattn[l]
+		[W_l, scale_l_fst, scale_l_scd, W_l_mlp_fst, b_l_mlp_fst, W_l_mlp_scd, b_l_mlp_scd] = W_mhattn[l]
+		
+		# apply the first layer norm to X
+		X_cp = []
+		for t in range(0, seq_len):
+			X_cp.append(rms_layer_norm(X[:, t], scale_l_fst))
+		X_cp = jnp.asarray(X_cp).T
+		
+		# apply multi-head attention
+		X = X + mhAttention(X_cp, W_l, mask)
+		
+		# apply the second layer norm to X
+		X_cp = []
+		for t in range(0, seq_len):
+			X_cp.append(rms_layer_norm(X[:, t], scale_l_scd))
+		X_cp = jnp.asarray(X_cp).T
+			
+		# apply GELU and MLP's to X_cp
+		Gelu = jnn.gelu(jnp.dot(W_l_mlp_fst, X_cp) + jnp.sum(b_l_mlp_fst))
+		X += jnp.dot(W_l_mlp_scd, Gelu) + jnp.sum(b_l_mlp_scd)
+		
+	# apply the final layer norm to X
+	X_res = []
+	for t in range(0, seq_len):
+		X_res.append(rms_layer_norm(X[:, t], scale_l_fin))
+	X_res = jnp.asarray(X_res).T
+		
+	# apply unembedding and softmax
+	return jnn.softmax(jnp.dot(W_u, X_res))
+
+
+
+# initialize the parameters for the transformer model
 def init_params(vocabSize, seqMaxLen, L, H, d_enc, d_mlp, d_attn, d_x, d_z, d_mid, d_out):
 	# token encoding and positional encoding
 	W_enc = random_params_by_size(d_enc, vocabSize)
@@ -138,76 +213,60 @@ def init_params(vocabSize, seqMaxLen, L, H, d_enc, d_mlp, d_attn, d_x, d_z, d_mi
 	# return the parameters as a list
 	return [W_enc, W_pos, W_mhattn, scale_l_fin, W_u]
 
-
-# the decoder-only transformer
+# the Loss Function
 @jit
-def decoder_only_transformer(seq, params, vocabSize, seqMaxLen, L, H, d_enc, d_mlp, d_attn, d_x, d_z, d_mid, d_out):
-	# seq is the input training sequence, is also contains the hard-coded token embedding
-	# pos_matrix is the positional encoding matrix
-	# params contains the weights for all the multi-head attention layers 
-	############### Content of params ######################
-	# params = [W_enc, W_pos, W_mhattn, scale_l_fin, W_u]
-	# W_mhattn = [W_l, scale_l_fst, scale_l_scd, W_l_mlp_fst, b_l_mlp_fst, W_l_mlp_scd, b_l_mlp_scd for l in range(L)]
-	# W_l = [
-	#		[[W_q, b_q, W_k, b_k, W_v, b_v] for h in range(H)]
-	#		[W_o, b_o]
-	#		]
+def transformerLoss(params, seq):
+	# compute the distribution from the transformer
+	distrib = decoder_only_transformer(seq, params)
 	
-	############### Preliminaries ##########################
-	# unpack params
-	[W_enc, W_pos, W_mhattn, scale_l_fin, W_u] = params
+	# compute the loss
+	loss = 0
+	for t in range(len(seq) - 1):
+		loss -= jnp.log(distrib[seq[t + 1], t])
 	
-	# initialize the mask
-	# mask[t, t_prime] = [t <= t_prime] is equivalent to below:
-	mask = jnp.ones([seq_len, seq_len])
-	for t in range(1, seq_len):
-		mask = mask.at[t, :t].set(0)
-	
-	############### Transformer implementation #############
-	# get the length of the sequence
-	seq_len = len(seq)
-	
-	# convert the sequence into token + positional embeddings
-	X = W_enc[:, seq[0]] + W_pos[:, 0]
-	for t in range(1, seq_len):
-		X = jnp.concatenate(X, W_enc[:, seq[t]] + W_pos[:, t], axis = 1)
-	
-	# for each layer of the transformer, compute on the encoded sequence X
-	for l in range(L):
-		# unpack W_mhattn[l]
-		[W_l, scale_l_fst, scale_l_scd, W_l_mlp_fst, b_l_mlp_fst, W_l_mlp_scd, b_l_mlp_scd] = W_mhattn[l]
-		
-		# apply the first layer norm to X
-		X_cp = rms_layer_norm(X[:, 0], scale_l_fst)
-		for t in range(1, seq_len):
-			X_cp = jnp.concatenate(X_cp, rms_layer_norm(X[:, t], scale_l_fst), axis = 1)
-		
-		# apply multi-head attention
-		X = X + mhAttention(X_cp, W_l, mask)
-		
-		# apply the second layer norm to X
-		X_cp = rms_layer_norm(X[:, 0], scale_l_scd)
-		for t in range(1, seq_len):
-			X_cp = jnp.concatenate(X_cp, rms_layer_norm(X[:, t], scale_l_scd), axis = 1)
-			
-		# apply GELU and MLP's to X_cp
-		Gelu = jnn.gelu(jnp.dot(W_l_mlp_fst, X_cp) + b_l_mlp_fst)
-		X = X + jnp.dot(W_l_mlp_scd, Gelu) + b_l_mlp_scd
-		
-	# apply the final layer norm to X
-	X = rms_layer_norm(X[:, 0], scale_l_fin)
-	for t in range(1, seq_len):
-		X = jnp.concatenate(X, rms_layer_norm(X[:, t], scale_l_fin), axis = 1)
-		
-	# apply unembedding and softmax
-	return jnn.softmax(jnp.dot(W_u, X))
+	# output the loss
+	return loss
+
+# function optimizations for gradient of loss function
+jitValueGradLoss = jit(value_and_grad(transformerLoss, argnums = 0))
 
 
 # Training of the transformer
-def train(dataset, params):
+def train(train, params, numEpoches, modelSavePath, checkPoint):
+	# get the initial opt_state
+	opt_state = opt_init(params)
 	
+	# step_i for the adam optimizer
+	step_i = 0
 	
-	
+	# training loop
+	for i in range(numEpoches):
+		for n in range(len(train)):
+			# get the params from the input opt_state
+			params = get_params(opt_state)
+
+			print(train[n])
+
+			# the loss and the grads
+			#loss = transformerLoss(params, seq)
+			loss, grads = jitValueGradLoss(params, train[n])
+			
+			# update the parameters using adam and get the optimized state
+			opt_state = opt_update(step_i, grads, opt_state)
+			
+			if (checkPoint):
+				# save results here
+				params = get_params(opt_state)
+				pickle.dump(params, open(modelSavePath, "wb"))
+			
+			print("epochI: ", i, "instanceI: ", n, "step_i: ", step_i, "loss: ", loss)
+			
+			# increment the step_i
+			step_i += 1
+			
+		# display accuracy
+		
+	params = get_params(opt_state)
 	return params
 
 	
@@ -221,21 +280,24 @@ if (__name__ == "__main__"):
 	# the path name
 	path = './bbc-news-summary/BBC News Summary/News Articles/tech/'
 
-	trainVec, testVec, tokens, seqMaxLen = textDataPreProc(path)
+	trainData, testData, tokens, seqMaxLen = textDataPreProcTransformer(path)
 
-	print('size of training data: ', len(trainVec))
-	print('size of test data: ', len(testVec))
+	print('size of training data: ', len(trainData))
+	print('size of test data: ', len(testData))
 	print('maximum instance length: ', seqMaxLen)
 
 	##################### Training of the LSTM model #################
 	# model save path
-	modelSavePath = './models/'
+	modelSavePath = './models/transformer_text.pickle'
+	
+	# flag for training again
+	trainAgain = True
+	
+	# if we want check points
+	checkPoint = True
 
 	# number of epoches to train for
-	numEpoches = 1
-
-	# custom the lstm size
-	lstmSize = 200
+	numEpoches = 2
 
 	# size of the tokens
 	vocabSize = len(tokens)
@@ -269,9 +331,16 @@ if (__name__ == "__main__"):
 	d_out = 20
 	
 	# initialize the parameters
-	params = init_params(vocabSize, seqMaxLen, L, H, d_enc, d_mlp, d_attn, d_x, d_z, d_mid, d_out)
+	if (trainAgain):
+		params = init_params(vocabSize, seqMaxLen, L, H, d_enc, d_mlp, d_attn, d_x, d_z, d_mid, d_out)
+	else:
+		params = pickle.load(open(modelSavePath, "rb"))
 	
+	#### Training ####
+	params = train(trainData, params, numEpoches, modelSavePath, checkPoint)
 	
+	# save results here
+	pickle.dump(params, open(modelSavePath, "wb"))
 
 
 
