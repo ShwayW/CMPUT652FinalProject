@@ -30,14 +30,25 @@ def getTokens(lines: list) -> list:
 # Shway Wang
 # Nov. 1, 2022
 def toOneHot(lines: list, tokens: list) -> list:
-    oneHot = []
-    for lineI in range(len(lines)):
-        line = lines[lineI]
-        numedLine = np.array([tokens.index(token) for token in line])
-        lineVec = np.zeros((numedLine.size, len(tokens)))
-        lineVec[np.arange(numedLine.size), numedLine] = 1
-        oneHot.append(lineVec)
-    return oneHot
+	oneHot = []
+	for lineI in range(len(lines)):
+		line = lines[lineI]
+		numedLine = np.array([tokens.index(token) for token in line])
+		lineVec = np.zeros((numedLine.size, len(tokens)))
+		lineVec[np.arange(numedLine.size), numedLine] = 1
+		oneHot.append(lineVec)
+	return oneHot
+    
+## function to convert data to token indices
+# Shway Wang
+# Nov. 15, 2022
+def toTokenInd(lines: list, tokens: list) -> list:
+	tokenInd = []
+	for lineI in range(len(lines)):
+		line = lines[lineI]
+		numedLine = np.array([tokens.index(token) for token in line])
+		tokenInd.append(numedLine)
+	return tokenInd
 
 ## gets the maximum length of the data sequence
 # Shway Wang
@@ -63,7 +74,7 @@ def vec2tile(vec, tokens):
 	bi = np.argmax(vec[-2:], axis = 0)
 	return tokens[ai], tokens[len(vec[:-2]) + bi]
 
-## preprocesses the text data
+## preprocesses the text data for LSTM
 # Shway Wang
 # Nov. 1, 2022
 def textDataPreProc(path):
@@ -105,6 +116,49 @@ def textDataPreProc(path):
 	
 	# return the one hot vectors of training and test sets and the set of tokens
 	return trainVec, testVec, tokens, seqMaxLen
+	
+## preprocesses the text data for Transformer
+# Shway Wang
+# Nov. 15, 2022
+def textDataPreProcTransformer(path):
+	# get all the lines
+	lines = []
+	path += '{}'
+	for i in range(1, 402):
+	    if (i < 10):
+	        index = "00{}.txt".format(i)
+	    elif (i < 100):
+	        index = "0{}.txt".format(i)
+	    else:
+	        index = "{}.txt".format(i)
+	    with open(path.format(index), 'r') as f:
+	        lines.extend(f.readlines())
+
+	# Remove new lines and empty lines
+	lines = [line for line in lines if line != '\n' or '']
+
+	# Strip all lines
+	lines = [line.strip() for line in lines]
+
+	# remove lines that are less than 10 tokens
+	lines = [line for line in lines if len(line) > 10]
+
+	seqMaxLen = getMaxSeqLen(lines)
+
+	# get the unique tokens
+	tokens = getTokens(lines)
+
+	# split the lines to training set and test set
+	splitInd = floor(0.8 * len(lines))
+	train = lines[:splitInd + 1]
+	test = lines[splitInd + 1:]
+
+	# convert the training set and test set into one hot vectors
+	train = toTokenInd(train, tokens)
+	test = toTokenInd(test, tokens)
+	
+	# return the one hot vectors of training and test sets and the set of tokens
+	return train, test, tokens, seqMaxLen
 	
 # Process the level and path data into a form that can be used by the LSTM 
 # Justin Stevens
