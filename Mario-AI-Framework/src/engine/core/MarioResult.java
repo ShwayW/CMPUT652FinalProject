@@ -10,7 +10,25 @@ public class MarioResult {
     private MarioWorld world;
     private ArrayList<MarioEvent> gameEvents;
     private ArrayList<MarioAgentEvent> agentEvents;
+    
+ // Trajectory collection for imitation learning
+    public ArrayList<int[][]> obsList;
+    public ArrayList<boolean[]> actList;
+    public ArrayList<float[]> infoList;
 
+    public MarioResult(MarioWorld world, ArrayList<MarioEvent> gameEvents, ArrayList<MarioAgentEvent> agentEvents, 
+    		ArrayList<int[][]> obsList,
+    	    ArrayList<boolean[]> actList,
+    	    ArrayList<float[]> infoList) {
+    	
+        this.world = world;
+        this.gameEvents = gameEvents;
+        this.agentEvents = agentEvents;
+        this.obsList = obsList;
+        this.actList = actList;
+        this.infoList = infoList;
+    }
+    
     /**
      * Create a mario result object
      *
