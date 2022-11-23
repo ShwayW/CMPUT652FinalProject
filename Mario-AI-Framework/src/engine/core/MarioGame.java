@@ -11,6 +11,7 @@ import java.io.File;
 import javax.swing.JFrame;
 
 import agents.human.Agent;
+import engine.helper.EventType;
 import engine.helper.GameStatus;
 import engine.helper.MarioActions;
 
@@ -284,6 +285,18 @@ public class MarioGame {
             System.out.println("An error occured");
             return new MarioResult(this.world, gameEvents, agentEvents);
         }    
+        
+        // Set up trajectory collection for imitation learning models
+        ArrayList<int[][]> obsList = new ArrayList<>();
+        ArrayList<boolean[]> actList = new ArrayList<>(); 
+        ArrayList<float[]> infoList = new ArrayList<>();
+        
+        // Collect the first obs because length of obsList must be len(actList + 1)
+        int[][] obs = model.getScreenCompleteObservation(0,0); // NOTE: Went back to using fwd model instead of world
+        int[] pos = model.getMarioScreenTilePos();
+        obs[Math.min(15,pos[0])][Math.min(15, pos[1])] = 98 + this.world.mario.facing; // Place mario tile and keep track of where he is facing
+        obsList.add(obs);
+        
         while (this.world.gameStatus == GameStatus.RUNNING) {
             if (!this.pause) {
                 //get actions
@@ -312,6 +325,38 @@ public class MarioGame {
             String marioY = Integer.toString(screenY); 
             String marioCoordinates = marioX + "," + marioY+"\n"; 
             //System.out.println(marioCoordinates);
+            
+            /*---------Trajectory Collection----------*/
+            // Collect obs, rew, and info for trajectory
+            
+            // Obs
+            obs = model.getScreenCompleteObservation(0,0); // NOTE: Went back to using fwd model instead of world
+            pos = model.getMarioScreenTilePos();
+            obs[Math.min(15,pos[0])][Math.min(15, pos[1])] = 98 + this.world.mario.facing; // Place mario tile and keep track of where he is facing
+            
+            // Info
+            int g = 0; // Count of how many enemies were stomped
+            for (MarioEvent e : gameEvents) {
+                if (e.getEventType() == EventType.STOMP_KILL.getValue()) {
+                    g += 1;
+                }
+            }
+            
+        	float x = world.mario.x; // x position
+            float vx = world.mario.xa; // instantaneous velocity 
+            int d = world.mario.alive ? 0 : -15; // penalty for dying           
+            float f = model.getCompletionPercentage() == 1? 15 : 0; // reward for full completion
+            int c = 4; // assume difference in clock is 4 frames due to 4-frame skip
+            
+            float[] info = new float[] {vx, d, f, c, x, g};
+            infoList.add(info);
+            
+            // Agent is rewarded for moving to the right, while not dying, and doing so as quick as possible
+            float reward = vx + d + f - c;  // NOTE: DONT NEED THIS
+         
+            /*----------------------------------------*/
+           
+            
             try{
                 FileWriter myWriter = new FileWriter("positionData.txt", true);
                 myWriter.write(marioCoordinates);
@@ -336,10 +381,10 @@ public class MarioGame {
                 }
             }
         }
-        return new MarioResult(this.world, gameEvents, agentEvents);
+        return new MarioResult(this.world, gameEvents, agentEvents, obsList, actList, infoList);
     }
 
-    // ************************ CUSTOM FUNCTIONS - Michael *******************************
+ // ************************ CUSTOM FUNCTIONS - Michael *******************************
 
     /**
      * Create a new instance of a Mario game (based on runGame functions from original)
@@ -360,12 +405,11 @@ public class MarioGame {
      * @return
      */
     public MarioResult resetGame(MarioAgent agent, String level, int timer, int marioState, boolean visuals, int fps, float scale) {
-        this.visuals = visuals;
+        // Modified original framework code to convert some variables to instance variables so they can be accessed elsewhere
+    	
+    	this.visuals = visuals;
         this.fps = fps;
-        this.setAgent(agent);
-        this.world = new MarioWorld(this.killEvents);
-        this.world.visuals = visuals;
-        this.world.initializeLevel(level, 1000 * timer);
+        
 
         if (visuals) {
             this.window = new JFrame("Mario AI Framework - python");
@@ -376,6 +420,15 @@ public class MarioGame {
             this.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             this.render.init();
             this.window.setVisible(true);
+            
+        }
+
+        this.setAgent(agent);
+        this.world = new MarioWorld(this.killEvents);
+        this.world.visuals = visuals;
+        this.world.initializeLevel(level, 1000 * timer);
+
+        if (visuals) {
             this.world.initializeVisuals(this.render.getGraphicsConfiguration());
         }
 
@@ -398,12 +451,33 @@ public class MarioGame {
 
         this.gameEvents = new ArrayList<>();
         this.agentEvents = new ArrayList<>();
+        
+        // Print first line of positionData.txt
+        
+        File PositionData = new File("src/positionData.txt"); 
+        PositionData.delete(); 
+        File PositionData2 = new File("src/positionData.txt"); 
+
+        // Print x-length of the level 
+
+        int xLength = level.length()/16-1; 
+        String xLengthString = Integer.toString(xLength) + "\n";
+        try{
+            FileWriter myWriter = new FileWriter("src/positionData.txt", true);
+            myWriter.write(xLengthString);
+            myWriter.close();
+        }
+        catch(IOException ex){
+            System.out.println("An error occured");
+            return new MarioResult(this.world, gameEvents, agentEvents);
+        }    
 
         return new MarioResult(this.world, this.gameEvents, this.agentEvents);
     }
 
     /** Step function */
-
+    // This is the core of the environment code
+    
     public StepResult stepGame() {
         // Run this if we're using an A* or User as input action
 
@@ -415,7 +489,8 @@ public class MarioGame {
         // Run this to step game from python code
 
         MarioForwardModel model = new MarioForwardModel(this.world);
-            if (!this.pause) {
+
+        	if (!this.pause) {
 
                 //get actions
                 agentTimer = new MarioTimer(MarioGame.maxTime);
@@ -434,26 +509,57 @@ public class MarioGame {
                         this.world.mario.onGround, this.world.currentTick));
             }
 
+        	int screenX = (int) (this.world.mario.x  / 16);
+            int screenY = (int) (this.world.mario.y / 16);
+            String marioX = Integer.toString(screenX);
+            String marioY = Integer.toString(screenY); 
+            String marioCoordinates = marioX + "," + marioY+"\n"; 
+        	
             // Gym setup based on https://github.com/Kautenja/gym-super-mario-bros 
-            // get obs
+//            // get obs - seems like 
             int[][] obs = model.getScreenCompleteObservation(0,0);
             int[] pos = model.getMarioScreenTilePos();
-            obs[Math.min(pos[0], 15)][Math.min(pos[1],15)] = 99;
+            
+//            // TODO: Switch this with world model for [-1] offset!
+//            int[][] obs = this.world.getMergedObservation(this.world.cameraX  + MarioGame.width / 2, MarioGame.height / 2,0,0);
+//            int[] pos = new int[] {(int)((this.world.mario.x - this.world.cameraX) / 16), (int) (this.world.mario.y / 16)};
+//            int[] pos = model.getMarioScreenTilePos();
+            
+            
+            obs[Math.min(15,pos[0])][Math.min(15, pos[1])] = 98 + this.world.mario.facing; // Place mario tile and keep track of where he is facing
 
-            // get reward
-
+            // Calculate in-game statistics relevant to reward function
+            
+            int g = 0; // Count of how many enemies were stomped
+            for (MarioEvent e : this.gameEvents) {
+                if (e.getEventType() == EventType.STOMP_KILL.getValue()) {
+                    g += 1;
+                }
+            }
+        	float x = world.mario.x; // x-position
             float vx = world.mario.xa; // instantaneous velocity 
             int d = world.mario.alive ? 0 : -15; // penalty for dying           
             float f = model.getCompletionPercentage() == 1? 15 : 0; // reward for full completion
             int c = 4; // assume difference in clock is 4 frames due to 4-frame skip
             
             // Agent is rewarded for moving to the right, while not dying, and doing so as quick as possible
-            float reward = vx + d + f - c; 
-            reward = reward > 15 ? 15 : (reward < -15 ? -15 : reward); // clip reward between +/- 15
+            float reward = vx + d + f - c; // NOTE: NOT NEEDED ANYMORE, reward calculated in python from info dict
 
             // episode is complete if we get to the castle, die, or run out of time
             boolean done = world.gameStatus ==  GameStatus.WIN || world.gameStatus == GameStatus.LOSE || world.currentTimer <= 0;
 
+            
+            // Print subsequent lines to positionData.txt
+            try{
+                FileWriter myWriter = new FileWriter("src/positionData.txt", true); // TODO: Refactor so we dont open and close every timestep?
+                myWriter.write(marioCoordinates);
+                myWriter.close();
+            }
+            catch(IOException ex){
+                System.out.println("An error occured");
+                return new StepResult(obs, reward, done, new float[] {vx, d, f, c, x, g});
+            }      
+            
             //render world
             if (this.visuals) {
                 this.render.renderWorld(this.world, this.renderTarget, this.backBuffer, this.currentBuffer);
@@ -469,7 +575,7 @@ public class MarioGame {
                 }
             }
             
-        return new StepResult(obs, reward, done, "");
+        return new StepResult(obs, reward, done, new float[] {vx, d, f, c, x, g});
 
     }
 
@@ -479,3 +585,4 @@ public class MarioGame {
     }
 
 }
+

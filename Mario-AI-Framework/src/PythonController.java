@@ -29,16 +29,15 @@ public class PythonController {
         return content;
     }
     
-    public static StepResult reset(boolean render) {
+    public static StepResult reset(boolean render, String level, int timer) {
     	// Start new game and return first observation
-
     	game = new MarioGame();
-    	MarioResult result = game.buildGame(new agents.robinBaumgarten.Agent(), getLevel("./levels/original/lvl-1.txt"), 20, 0, render);
-    	return game.stepGame(new boolean[] {false, false, false, false, false});
+    	MarioResult result = game.buildGame(new agents.robinBaumgarten.Agent(), getLevel(level), timer, 0, render);
+    	return game.stepGame(new boolean[] {false, false, false, false, false}); // Just step the game once with a no-op
     }
     
     public static StepResult step(boolean[] action) {
-        // Step the environment once (4 frames due to frame skip)
+        // Step the environment by one game tick with the provided action
     	return game.stepGame(action);
     }
     
@@ -61,5 +60,13 @@ public class PythonController {
         while (result.getGameStatus() == GameStatus.RUNNING) {
             game.stepGame();
         }
+    }
+    
+    public static MarioResult collectTrajectory() {
+    	// Use this to collect trajectories from human-input
+    	MarioGame game = new MarioGame();
+    	MarioResult result = game.runGame(new agents.human.Agent(), getLevel("./levels/original/lvl-1.txt"), 20, 0, true);
+    	game.killGame();
+    	return result;
     }
 }
