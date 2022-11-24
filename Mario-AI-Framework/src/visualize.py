@@ -26,6 +26,10 @@ visualization["S"] = "brick"
 visualization["?"] = "exclamationBox"
 visualization["Q"] = "exclamationBoxEmpty"
 visualization["E"] = "enemy"
+visualization["g"] = "enemy"
+visualization["U"] = "exclamationBox"
+visualization["?"] = "exclamationBox"
+visualization["#"] = "pyramind"
 visualization["<"] = "bushTopLeft"
 visualization[">"] = "bushTopRight"
 visualization["["] = "bushLeft"
@@ -34,15 +38,24 @@ visualization["o"] = "coin"
 visualization["B"] = "arrowTop"
 visualization["b"] = "arrowBottom"
 visualization["x"] = "mario"
+visualization["L"] = "exclamationBox"
+visualization["@"] = "exclamationBox"
+visualization["T"] = "pipe" 
+visualization["C"] = "brick"
+visualization["M"] = "mario"
+visualization["k"] = "greenkoopa"
+visualization["r"] = "redkoopa"
+visualization["F"] = "finishline"
 
 # This reads in the level
 
 level = {}
 
-directoryName = "../../Output/"
+#directoryName = "../../Output/"
 #directoryName = "Data/Completionist/"
 #directoryName = "levels/original/"
-outputFileName = "example10path"
+directoryName = "Data/Speedrunner/"
+outputFileName = "lvl-2path"
 
 with open(directoryName+outputFileName+".txt") as fp:
 	y = 0
@@ -75,6 +88,8 @@ for y in range(0, maxY):
 			else:
 				imageToUse = sprites["stair"]
 
+		elif level[y][x]!='-':
+			print(level[y][x])
 		if not imageToUse == None:
 			#If we have a sprite (imageToUse) copy its pixels over
 			pixelsToUse = imageToUse.load()
