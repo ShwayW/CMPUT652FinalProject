@@ -17,8 +17,8 @@ for filename in glob.glob(os.path.join("sprites", "*.png")):
 	#print(name)
 	sprites[name] = im.convert('RGBA')
 
-marioImage = Image.open("img/favicon.png")
-sprites["mario"] = marioImage.convert('RGBA')
+#marioImage = Image.open("img/favicon.png")
+#sprites["mario"] = marioImage.convert('RGBA')
 
 #This gives the mapping between the tile values and the associated sprite
 visualization = {}
@@ -46,7 +46,14 @@ visualization["M"] = "mario"
 visualization["k"] = "greenkoopa"
 visualization["r"] = "redkoopa"
 visualization["F"] = "finishline"
-
+visualization["!"] = "exclamationBox"
+visualization["t"] = "pipe"
+visualization["y"] = "spiky"
+visualization["R"] = "redkoopa"
+visualization["K"] = "paratroopa"
+visualization["*"] = "bulletbill"
+visualization["|"] = "backgroundtile"
+visualization["%"] = "backgroundtile"
 # This reads in the level
 
 level = {}
@@ -55,7 +62,8 @@ level = {}
 #directoryName = "Data/Completionist/"
 #directoryName = "levels/original/"
 directoryName = "Data/Speedrunner/"
-outputFileName = "lvl-2path"
+i = int(sys.argv[1])
+outputFileName = "lvl-%dpath"%(i)
 
 with open(directoryName+outputFileName+".txt") as fp:
 	y = 0

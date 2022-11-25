@@ -1,9 +1,12 @@
 # Code for merging together the level and path data together
 
+import sys
+
 def main(): 
 
+	i = int(sys.argv[1])
 	levelLocation = 'levels/original/'
-	levelName = 'lvl-2.txt'
+	levelName = 'lvl-%d.txt'%(i)
 	dataSource = 'Speedrunner/'
 
 	with open(levelLocation+levelName) as fp:

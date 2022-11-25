@@ -1,7 +1,10 @@
 # Code for processing the path that is outputted in the main gameplay loop of MarioGame.java into positionData.txt
 
+import sys
+
 def main(): 
 
+	i = int(sys.argv[1])
 	maxHeight = 16
 	with open('positionData.txt') as f:
 		first_line = f.readline().rstrip()
@@ -15,7 +18,9 @@ def main():
 			y = int(y)
 			if(y<=maxHeight-1):
 				levelData[y][x] = 'x'
-	f = open("Data/Completionist/lvl-1.txt", "w")
+
+	folderName = "Data/Speedrunner/lvl-%d.txt"%(i)
+	f = open(folderName, "w")
 	for i in range(maxHeight): 
 		level = levelData[i]
 		if(i<maxHeight-1):

@@ -4,11 +4,11 @@
 def main():
 
 	reversible = True 
-	directory = "Data/Completionist/"
+	directory = "Data/Speedrunner/"
 	#directory = "Data/Justin/"
 	maxHeight = 16
 
-	baseLevel = "lvl-1s"
+	baseLevel = "lvl-1paths"
 	#directory = "levels/original/"
 	if(reversible):
 		level = baseLevel+"a"

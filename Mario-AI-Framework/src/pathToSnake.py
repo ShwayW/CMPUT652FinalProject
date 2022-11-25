@@ -1,16 +1,22 @@
 # Code that works on taking the user's path data and outputs it in 
 
+import sys 
 
 def main():
 	#directory = "Data/Completionist/"
-	directory = "Data/Justin/"
+	directory = "Data/Speedrunner/"
 	#directory = "levels/original/"
-	level = "bogusData"
+	i = int(sys.argv[1])
+	j = int(sys.argv[2])
+	level = "lvl-%dpath"%(i)
 
 	# Load in the input path data as a 2d array and output it in a snake format in two different ways
 	source = directory+level+".txt"
 
-	reversible = False
+	if(j): 
+		reversible = True
+	else:
+		reversible = False
 
 	if(reversible):
 		destination = directory+level+"sa.txt"
