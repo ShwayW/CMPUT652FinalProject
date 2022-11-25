@@ -16,27 +16,35 @@ class Inference(Module):
 		with open(name, 'rb') as handle:
 			return load(handle)
 
-	def __call__(self, sentence):
-		# Append start and end of string tokens to the input sentence
-		sentence[0] = ["<start>"] + sentence[0]
+	def convert_to_str(self, dec_tokenizer, decoder_output):
+		output = transpose(decoder_output.stack())
+		output = output.numpy()
+
+		output_str = ''
 		
+		# Decode the predicted tokens into an output string
+		for i in range(output.shape[0]):
+			key = output[i]
+			output_str += dec_tokenizer.index_word[key]
+			
+		return output_str
+		
+
+	def __call__(self, prompt, maxInputLen):
 		# Load encoder and decoder tokenizers
-		dec_tokenizer = self.load_tokenizer('news_tokenizer.pkl')
+		dec_tokenizer = self.load_tokenizer('levels_tokenizer.pkl')
 		
 		# Prepare the output <START> token by tokenizing, and converting to tensor
-		output_start = dec_tokenizer.texts_to_sequences(sentence)
+		output_start = dec_tokenizer.texts_to_sequences(prompt)
 		output_start = convert_to_tensor(output_start[0], dtype = int64)
-		
-		# Prepare the output <EOS> token by tokenizing, and converting to tensor
-		output_end = dec_tokenizer.texts_to_sequences([["<eos>"]])
-		output_end = convert_to_tensor(output_end[0], dtype=int64)[0]
 
 		# Prepare the output array of dynamic size
 		decoder_output = TensorArray(dtype = int64, size = 0, dynamic_size = True)
 		for i in range(len(output_start)):
 			decoder_output = decoder_output.write(i, output_start[i])
 
-		for i in range(self.genLen):
+		output_str = ''
+		for genI in range(self.genLen):
 			# Predict an output token
 			prediction = self.transformer(decoder_output.stack()[newaxis, :], training = False)
 			prediction = prediction[:, -1, :]
@@ -44,25 +52,17 @@ class Inference(Module):
 			# Select the prediction with the highest score
 			predicted_id = argmax(prediction, axis = -1)[0]
 			
-			# Write the selected prediction to the output array at the next available index
-			decoder_output = decoder_output.write(i + len(output_start), predicted_id)
-
-			print("pred index: ", i, predicted_id, output_end)
-
-			# Break if an <EOS> token is predicted
-			if (predicted_id == output_end):
-				break
-
-		output = transpose(decoder_output.stack())
-		output = output.numpy()
-
-		output_str = ''
-
-		# Decode the predicted tokens into an output string
-		for i in range(output.shape[0]):
-			key = output[i]
-			output_str += dec_tokenizer.index_word[key]
-
+			if (transpose(decoder_output.stack()).numpy().shape[0] >= maxInputLen):
+				for i in range(maxInputLen - 1):
+					decoder_output = decoder_output.write(i, decoder_output.read(i + 1))
+				decoder_output = decoder_output.write(maxInputLen - 1, predicted_id)
+			else:
+				# Write the selected prediction to the output array at the next available index
+				decoder_output = decoder_output.write(genI + len(output_start), predicted_id)
+			
+			print("pred index: ", genI)
+			output_str += self.convert_to_str(dec_tokenizer, decoder_output)[-1]
+			print(output_str)
 		return output_str
 
 # the inference process:
@@ -81,18 +81,21 @@ if (__name__ == '__main__'):
 	# batch size
 	batch_size = 32
 	
+	# maximum input length
+	maxInputLen = 400;
+	
 	# the prompt
-	prompt = 'Hollow Knight '
+	prompt = 'x----XXXXttttx------------------xttttXXXX---x--------------------xx--XXXX-x-------------------------xXXXXx---------1111---------1---xXXXXx--------------------------xXXXXx------------oooo----------xXX---x-----------------------x----XX--x----------------------x--XXXX-xx----------SSSS----------|||||||--------------------------xXXXXx--S--------------------@--xXXXXx--S-g--------------S------xXXXXx------';
 	
 	# Desired generation length
-	genLen = 1000
+	genLen = 3232
 	
 	# Use traned model
 	useTrainedModel = True
 
 	# Prepare the training and test splits of the dataset
 	dataset = PrepareDataset()
-	trainProc, train_orig, dec_seq_max_length, dec_vocab_size = dataset('./news.pkl')
+	trainProc, train_orig, dec_seq_max_length, dec_vocab_size = dataset('./levels.pkl')
 	
 	print("Maximum sequence length: ", dec_seq_max_length)
 	print("Vocabulary size: ", dec_vocab_size)
@@ -120,14 +123,14 @@ if (__name__ == '__main__'):
 	else:		
 		inferencing_model = TransformerModel(dec_vocab_size, dec_seq_max_length, h, d_k, d_v, d_model, d_ff, n, 0)
 	
-	inference = Inference(inferencing_model, genLen)
+	inference = Inference(inferencing_model, genLen + len(prompt))
 	
 	# preprocess the prompt to char by char
 	preced_prompt = []
 	for i in range(len(prompt)):
 		preced_prompt.append(prompt[i])
 	
-	pred = inference([preced_prompt])
+	pred = inference([preced_prompt], maxInputLen)
 	
 	print(pred)
 	

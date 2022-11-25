@@ -77,7 +77,7 @@ class LRScheduler(LearningRateSchedule):
 
 
 if (__name__ == '__main__'):
-	filename = './news.pkl'
+	filename = './levels.pkl'
 	model_save_path = './models/transformer'
 	
 	# If we want to train again

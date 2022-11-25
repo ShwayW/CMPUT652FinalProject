@@ -8,12 +8,12 @@ from tensorflow import convert_to_tensor, int64
 class PrepareDataset:
 	def __init__(self, **kwargs):
 		super(PrepareDataset, self).__init__(**kwargs)
-		self.n_sentences = 2569  # Number of sentences to include in the dataset
+		self.n_sentences = 42236  # Number of sentences to include in the dataset
 		self.train_split = 1.0  # Ratio of the training data split
  
 	# Fit a tokenizer
 	def create_tokenizer(self, dataset):
-		tokenizer = Tokenizer()
+		tokenizer = Tokenizer(lower = False)
 		tokenizer.fit_on_texts(dataset)
 		return tokenizer
  
@@ -31,22 +31,22 @@ class PrepareDataset:
 
 		# Reduce dataset size
 		dataset = clean_dataset[:self.n_sentences]
-
-		# Include start and end of string tokens
-		for i in range(dataset.size):
-			dataset[i] = ["<start>"] + dataset[i] + ["<eos>"]
-
+		
 		# Random shuffle the dataset
 		shuffle(dataset)
 
 		# Split the dataset
-		train = dataset[:int(self.n_sentences * self.train_split)]
+		train = list(dataset[:int(self.n_sentences * self.train_split)])
+		
+		# convert to list
+		for i in range(len(train)):
+			train[i] = list(train[i])
 
 		# Prepare tokenizer for the decoder input
 		dec_tokenizer = self.create_tokenizer(train)
 		
 		# store the tokenizer
-		dump(dec_tokenizer, open('news_tokenizer.pkl', 'wb'))
+		dump(dec_tokenizer, open('levels_tokenizer.pkl', 'wb'))
 		
 		# compute the decoder max sequence length and vocabulary size
 		dec_seq_max_length = self.find_seq_max_length(train)
