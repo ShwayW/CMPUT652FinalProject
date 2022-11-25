@@ -7,16 +7,12 @@ def main():
 	directory = "Data/Speedrunner/"
 	#directory = "levels/original/"
 	i = int(sys.argv[1])
-	j = int(sys.argv[2])
 	level = "lvl-%dpath"%(i)
 
 	# Load in the input path data as a 2d array and output it in a snake format in two different ways
 	source = directory+level+".txt"
 
-	if(j): 
-		reversible = True
-	else:
-		reversible = False
+	reversible = False 
 
 	if(reversible):
 		destination = directory+level+"sa.txt"

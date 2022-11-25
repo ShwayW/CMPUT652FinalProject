@@ -3,12 +3,13 @@
 
 def main():
 
-	reversible = True 
+	reversible = False 
+	#directory = "../../output/"
 	directory = "Data/Speedrunner/"
 	#directory = "Data/Justin/"
 	maxHeight = 16
 
-	baseLevel = "lvl-1paths"
+	baseLevel = "lvl-10paths"
 	#directory = "levels/original/"
 	if(reversible):
 		level = baseLevel+"a"
@@ -19,7 +20,6 @@ def main():
 		top = True	
 		stringIndex = 0
 
-	# Load in the input path data as a 2d array and output it in a snake format in two different ways
 	source = directory+level+".txt"
 	destination = directory+level+"path.txt"
 	f = open(source, "r")

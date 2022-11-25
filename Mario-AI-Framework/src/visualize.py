@@ -58,12 +58,13 @@ visualization["%"] = "backgroundtile"
 
 level = {}
 
-#directoryName = "../../Output/"
+directoryName = "../../output/"
 #directoryName = "Data/Completionist/"
 #directoryName = "levels/original/"
-directoryName = "Data/Speedrunner/"
+#directoryName = "Data/Speedrunner/"
 i = int(sys.argv[1])
-outputFileName = "lvl-%dpath"%(i)
+#outputFileName = "lvl-%dpath"%(i)
+outputFileName = "output_0%dpath"%(i)
 
 with open(directoryName+outputFileName+".txt") as fp:
 	y = 0
@@ -77,6 +78,7 @@ pixels = image.load() #This loads the level image's pixels so we can edit them
 
 maxY = len(level.keys())
 maxX = len(level[0])
+
 
 for y in range(0, maxY):
 	for x in range(0, maxX):
