@@ -82,13 +82,13 @@ if (__name__ == '__main__'):
 	batch_size = 32
 	
 	# maximum input length
-	maxInputLen = 400;
+	maxInputLen = 320;
 	
 	# the prompt
-	prompt = 'x----XXXXttttx------------------xttttXXXX---x--------------------xx--XXXX-x-------------------------xXXXXx---------1111---------1---xXXXXx--------------------------xXXXXx------------oooo----------xXX---x-----------------------x----XX--x----------------------x--XXXX-xx----------SSSS----------|||||||--------------------------xXXXXx--S--------------------@--xXXXXx--S-g--------------S------xXXXXx------';
+	prompt = '-------------xXXXXx-------------';
 	
 	# Desired generation length
-	genLen = 3232
+	genLen = 3200
 	
 	# Use traned model
 	useTrainedModel = True
