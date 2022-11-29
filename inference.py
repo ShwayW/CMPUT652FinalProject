@@ -85,7 +85,7 @@ if (__name__ == '__main__'):
 	maxInputLen = 320;
 	
 	# the prompt
-	prompt = '-------------xXXXXx-------------';
+	prompt = '-------------xXXXXx------------';
 	
 	# Desired generation length
 	genLen = 3200

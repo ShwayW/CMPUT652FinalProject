@@ -93,7 +93,7 @@ if (__name__ == '__main__'):
 	 
 	# Define the training parameters
 	epochs = 300
-	batch_size = 32
+	batch_size = 52
 	beta_1 = 0.9
 	beta_2 = 0.98
 	epsilon = 1e-9
@@ -161,7 +161,10 @@ if (__name__ == '__main__'):
 
 			if (step % 8 == 0):
 				print(f'Epoch {epoch + 1} Step {step} Loss {train_loss.result():.4f} Accuracy {train_accuracy.result():.4f}')
-				# print("Samples so far: %s" % ((step + 1) * batch_size))
+				
+			if (train_accuracy.result() > 0.98):
+				break
+
 
 		# Print epoch number and loss value at the end of every epoch
 		print("Epoch %d: Training Loss %.4f, Training Accuracy %.4f" % (epoch + 1, train_loss.result(), train_accuracy.result()))

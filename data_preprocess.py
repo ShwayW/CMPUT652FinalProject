@@ -38,7 +38,7 @@ def split_to_chunks(lines, chunkLen):
 		line = normalize('NFD', line).encode('ascii', 'ignore')
 		line = line.decode('UTF-8')
 		
-		for chunkI in range(0, len(line) - chunkLen, 10):
+		for chunkI in range(0, len(line) - chunkLen):
 			# store the cleaned line
 			chunk = [re_print.sub('', w) for w in line[chunkI:chunkLen + chunkI]]
 			chunks.append(chunk)
@@ -59,7 +59,7 @@ if (__name__ == "__main__"):
 	fileFolder = './Mario-AI-Framework/src/Data/Speedrunner/'
 	
 	# the length of each chunk of level to be stored
-	chunkLen = 400
+	chunkLen = 320
 	
 	levels = levelDataPreProc(fileFolder)
 
