@@ -9,7 +9,7 @@ class MarioEnv(gym.Env):
 
     metadata = {"render.modes": ["human"]}
     
-    def __init__(self, render=True, level = "./levels/original/lvl-1.txt", horizons=False, starts=False, timer = 20, sticky=False, paths=False):
+    def __init__(self, render=True, level = "./levels/original/lvl-1.txt", horizons=False, starts=False, timer = 20, sticky=False, paths=False, astar=False):
         super(MarioEnv, self).__init__()
 
         # Define action and observation space
@@ -33,6 +33,7 @@ class MarioEnv(gym.Env):
         self.last_x = 0 # used for calculating reward function\
         self.paths = paths # save path data
         self.first_run = True
+        self.astar = astar
 
         # Connect JVM
         if not jpype.isJVMStarted():
@@ -41,12 +42,52 @@ class MarioEnv(gym.Env):
 
         self.main = jpype.JClass('PythonController')
 
+    def _agent_step(self):
+        # Take a step but use A* agent as action. Useful for debugging
 
+        # Step the environment 4 times
+        for i in range(4): 
+            result = self.main.step() 
+        info = result.info # Grab 'info' dict from the step result - currently holds [vx, d, f, c, x, g] (see java code for more details on these in-game variables)
+
+        # Calculate reward (see https://pypi.org/project/gym-super-mario-bros/) for details on vanilla reward
+        vx = (info[4] - self.last_x)/4 # reward component for +ve x displacement between steps
+        c = -4 # penalty for game clock == number of frames skipped
+        d = info[1] # 0 if mario is alive, -15 if mario is dead # TODO: replace this with 0 or 1 
+        f = info[2] # 15 if flag_get, 0 otherwise # TODO: replace this with 0 or 1
+
+        reward = -15 if d == -15 else 15 if f == 15 else vx + c
+
+        self.last_x = info[4] # set new last_x for next step
+
+        reward = np.clip(reward, -15, 15) # Clip reward between -15 and + 15
+
+        self.obs = self._get_single_obs(result) # NOTE: Frame-stacking will be done outside of the environment through a Gym-wrapper
+
+
+        # Calculate if episode should terminate. NOTE: SB3 handles vectorized environments strange and discards the last observation value of an episode, BUT usually this observation tells us if we died or completed the level. See https://github.com/hill-a/stable-baselines/issues/400 
+        # So, let us set our terminal condition to 1 step AFTER the intended termination so that it is not the one being discarded
+
+        done = False 
+        self.done = result.done # episode terminates if mario dies, completes the level, or runs out of time, note the difference in when self.done and done are called
+
+        # TODO: Check if this is needed (python interprets the java arrays strangely)
+        a = []
+        for i in info:
+            a.append(i)
+        # print(info)
+                
+        self.timestep += 1
+
+        return self.obs, reward, done, {"vx": a[0], "d":a[1], "f":a[2], "c":a[3], "x":a[4], "g": a[5] }
 
     def step(self, action):
         # Take a step into the environment using the given action
         # One 'step' equals 4 frames of holding the action (frame-skipping)
         
+        if self.astar:
+            return self._agent_step()
+
         # Convert discrete action to boolean array actions for [Left, Right, Action, Run, Jump]
         if action == 0:
             act = [False, False, False, False, False] # None
@@ -78,15 +119,18 @@ class MarioEnv(gym.Env):
             real_action = act
 
         # Step the environment 4 times
-        for i in range(4): 
+        for i in range(3): 
             result = self.main.step(real_action) 
+            prev_obs = self._get_single_obs(result)
+
+        result = self.main.step(real_action)
             
 
         info = result.info # Grab 'info' dict from the step result - currently holds [vx, d, f, c, x, g] (see java code for more details on these in-game variables)
 
         # Calculate reward (see https://pypi.org/project/gym-super-mario-bros/) for details on vanilla reward
-        vx = (info[4] - self.last_x)/4 # reward component for +ve x displacement between steps
-        c = -4 # penalty for game clock == number of frames skipped
+        vx = (info[4] - self.last_x)/2 # reward component for +ve x displacement between steps
+        c = -8 # penalty for game clock == number of frames skipped
         d = info[1] # 0 if mario is alive, -15 if mario is dead # TODO: replace this with 0 or 1 
         f = info[2] # 15 if flag_get, 0 otherwise # TODO: replace this with 0 or 1
 
@@ -97,6 +141,7 @@ class MarioEnv(gym.Env):
         reward = np.clip(reward, -15, 15) # Clip reward between -15 and + 15
 
         self.obs = self._get_single_obs(result) # NOTE: Frame-stacking will be done outside of the environment through a Gym-wrapper
+        self.obs = np.maximum(self.obs, prev_obs)
 
 
         # Calculate if episode should terminate. NOTE: SB3 handles vectorized environments strange and discards the last observation value of an episode, BUT usually this observation tells us if we died or completed the level. See https://github.com/hill-a/stable-baselines/issues/400 
@@ -237,17 +282,22 @@ class MarioEnv(gym.Env):
         obs[obs == 22] = 125 # break block
         obs[obs == 24] = 150 # coint block
 
-        obs[obs == 2] = 175 # enemy 
         obs[obs == 22] = 125 # break block
         obs[obs == 24] = 150 # coint block
         
         obs[obs == 2] = 175 # enemy 
+        obs[obs == 8] = 185 # plant enemy (NEW) NOTE: non-stompable enemy
+
 
         obs[obs == 12] = 200 # mushroom
         obs[obs == 30] = 225 # coin
+        obs[obs == 31] = 225 # coin - floating (NEW)
 
         obs[obs == 99] = 255 # mario
         obs[obs == 97] = 245 # mario left
+
+
+        # NEW: 31 - coin, 8 - plant enemy, 
 
         obs = np.moveaxis(obs, -1, 0) # Swap x and y for readability
 

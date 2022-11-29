@@ -41,6 +41,10 @@ public class PythonController {
     	return game.stepGame(action);
     }
     
+    public static StepResult step() {
+    	return game.stepGame(); // if step without action, use default A* agent's action
+    }
+    
     public static void close() {
     	game.killGame();
     }
