@@ -1,0 +1,16 @@
+--------------------------------------------------------------------------------------------------------------------------xxx--------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------xxx-x--------------------------------------------------------------
+xx----------------------------------------------------------------------------------------------------------------------xx--x--------------------------------------------------------------
+Sxx---SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS----xx----SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS-------SSSS-x---SSSSSSSSSSSSSSSSSSSSSSSSSSS-----SSSSSSSSSSSSSSSSSSSSSSSSSSS
+S--x----------------SSSSSSSSSSSSSSSSSSSSSSSSSSSS-------------x-x--------------------------------------------------------x----x----------------------------------SSSSSSSSSSSSSSSS-----------
+S--x----------------SSSSSSSSSSSSSSSSSSSSSSSCSSSS---------xx-x--xxxxx----------xx--x--------------------------xx--------xxx---x------------------xx--------------SSSSSSSSSSSSSSSS-xxx--x----
+S---x---------------SSSSSSSSSSSSSSSSSSSSSSSSSSSSxxQQ----xxxxx---CSSxx-------xxxxx-xx-xx-x----------------x--xxxx-xx----SUS---x-----------------xxxx-------------SSSSSSSSSSSSSSSSxxxxxxxx---
+S----x---------------------------xx-xxxxxxxxxxx-xx------x--xx-------x-----xxxxTTxxxxxxxx-x--------------xxx-x--xxxxxxxx--x--xxxx---------------x--x--------xx---S-xxxxxxxxxx-xxxxxxxTT--x--
+S----x--------------------------xxxxxxxxxxxxxxxx-xxx---x---SSS--2---x-----x-xxTTxx-xxxxxx-x------------xx-x-x---x--SSSx-xx--SSSxx--------------x---x-----xx--x--S-xxxxxxxxxxxxxxxx-xTT---x-
+S-----x------------x---------xxxxxxxxxxxxxxgggxx-xxxxxxx-------2-2---x--xx-xxxTTxxxxxx-Sxxx------------xx--xx---x-----xxxx------x---------x--xx----x-----xx--x---xooooooooooxxxxxx-xTT---x-
+S-----x---xx--xxx-x-x-SSSSSS?xSSSSSSSSSSSSSSSSSS-xQQxxQQQ---------2--x-xxxxxSCTTSUxxxxx-xxxx-----------xx--TT--xx------SSSS------xxx-----xxxxxTT---x---xxxx--x---USSSSSSSSSSxxxx#xxxTT----F
+S-----x--x--x-x--xx-x-SSSSSxxxSSSSSSSSSSSSSSSSSS-x--xx----------------xxTTxxx-TTx-xxTTxxxttx----------xx#--TT--##----------------xxxxx---xTTxxTT---x---x-x#--xxx--x---------xxx##xxxTT---SS
+S------x-x--xx---x---xSSSSSxxxSSSSSSSSSSSSSSSSSS-xxxxxxxx-------------xxTTxxxxTTxxxxTTxxxttx----------x##--TT--##----------------xxttx---xTT-xTT----x--x-##-SSSxxxxxxxxxxxxxxx###x-xTT---SS
+S------xxx--xx---x---xxxxxxoooSSSSSSSSSSSSSSSSSS-xxxxxxxx-------------xxTTxxxkTTxxxkTTxxkttxxxxxxxxxkkx##--TT--##-----------------xtt-xxxkTT-xTT----xxxx###-----xxxxxxxxkkxxx####x-kTT---SS
+XXXXXXXXXXX--XX--X---XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX--XX--XX------XXXX------XXXXXXXXXXXXXXX--XXXXXXXXX-----XXXXXXXXXXXXXXXXXXXXXXX--XX
+XXXXXXXXXXX--XX--X---XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX--XX--XX------XXXX------XXXXXXXXXXXXXXX--XXXXXXXXX-----XXXXXXXXXXXXXXXXXXXXXXX--XX

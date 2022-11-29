@@ -7,7 +7,7 @@ def main():
 	i = int(sys.argv[1])
 	levelLocation = 'levels/original/'
 	levelName = 'lvl-%d.txt'%(i)
-	dataSource = 'Speedrunner/'
+	dataSource = 'Completionist/'
 
 	with open(levelLocation+levelName) as fp:
 		levelData = fp.readlines()
