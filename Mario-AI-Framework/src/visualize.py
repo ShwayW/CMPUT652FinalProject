@@ -58,8 +58,8 @@ visualization["%"] = "backgroundtile"
 
 level = {}
 
-directoryName = "../../output/"
-directoryName = "Data/Completionist/"
+directoryName = "../../output/speedrunner/"
+#directoryName = "Data/Completionist/"
 #directoryName = "levels/original/"
 #directoryName = "Data/Speedrunner/"
 i = int(sys.argv[1])

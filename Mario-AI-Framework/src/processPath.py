@@ -19,7 +19,8 @@ def main():
 			if(y<=maxHeight-1):
 				levelData[y][x] = 'x'
 
-	folderName = "Data/Completionist/lvl-%d.txt"%(i)
+	#folderName = "Data/Completionist/lvl-%d.txt"%(i)
+	folderName = "../../output/speedrunner/lvl-%d.txt"%(i)
 	f = open(folderName, "w")
 	for i in range(maxHeight): 
 		level = levelData[i]
