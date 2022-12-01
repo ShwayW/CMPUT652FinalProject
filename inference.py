@@ -68,7 +68,8 @@ class Inference(Module):
 # the inference process:
 if (__name__ == '__main__'):
 	# the path to the trained model
-	model_save_path = './models/transformer.h5'
+	#model_save_path = './models/transformer_speedrunner.h5'
+	model_save_path = './models/transformer_completionist.h5'
 
 	# Define the model parameters
 	h = 8  # Number of self-attention heads
@@ -85,10 +86,10 @@ if (__name__ == '__main__'):
 	maxInputLen = 320;
 	
 	# the prompt
-	prompt = '-------------xXXXXx------------';
+	prompt = '-----x########XXXXxxxxxxxxx-----';
 	
 	# Desired generation length
-	genLen = 3200
+	genLen = 1600
 	
 	# Use traned model
 	useTrainedModel = True
