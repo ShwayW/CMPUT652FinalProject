@@ -6,11 +6,11 @@ def main():
 
 	i = int(sys.argv[1])
 	#levelLocation = 'levels/original/'
-	levelLocation = '../../output/speedrunner/'
+	levelLocation = '../../output/completionist/'
 	#levelName = 'lvl-%d.txt'%(i)
 	levelName = 'output_0%dpath.txt'%(i)
 	levelName2 = 'lvl-%d.txt'%(i)
-	dataSource = 'speedrunner/'
+	dataSource = 'completionist/'
 
 	with open(levelLocation+levelName) as fp:
 		levelData = fp.readlines()

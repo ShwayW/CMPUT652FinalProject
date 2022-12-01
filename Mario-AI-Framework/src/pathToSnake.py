@@ -6,7 +6,7 @@ def main():
 	#directory = "Data/Completionist/"
 	#directory = "Data/Speedrunner/"
 	#directory = "levels/original/"
-	directory = "../../output/speedrunner/"
+	directory = "../../output/completionist/"
 	i = int(sys.argv[1])
 	level = "lvl-%dpath"%(i)
 

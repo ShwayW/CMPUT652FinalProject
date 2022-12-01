@@ -58,7 +58,7 @@ visualization["%"] = "backgroundtile"
 
 level = {}
 
-directoryName = "../../output/speedrunner/"
+directoryName = "../../output/completionist/"
 #directoryName = "Data/Completionist/"
 #directoryName = "levels/original/"
 #directoryName = "Data/Speedrunner/"

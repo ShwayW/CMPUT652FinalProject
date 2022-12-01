@@ -8,8 +8,8 @@ def main():
 
 	top = True
 
-	source = "output/output_03.txt"
-	destination = "output/output_03path.txt"
+	source = "output/speedrunner/output_04.txt"
+	destination = "output/speedrunner/output_04path.txt"
 	f = open(source, "r")
 	fs = open(destination, "w")
 
