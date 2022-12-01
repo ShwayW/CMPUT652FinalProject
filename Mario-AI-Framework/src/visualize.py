@@ -58,12 +58,12 @@ visualization["%"] = "backgroundtile"
 
 level = {}
 
-directoryName = "../../output/completionist/"
+directoryName = "../../output/speedrunner/"
 #directoryName = "Data/Completionist/"
 #directoryName = "levels/original/"
 #directoryName = "Data/Speedrunner/"
 i = int(sys.argv[1])
-outputFileName = "lvl-%dpath"%(i)
+outputFileName = "hum-%dpath"%(i)
 #outputFileName = "output_0%dpath"%(i)
 
 with open(directoryName+outputFileName+".txt") as fp:

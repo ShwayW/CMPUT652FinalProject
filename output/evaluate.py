@@ -11,7 +11,7 @@ def hamming_distance(string1, string2):
 
 
 def main():
-	for i in range(1, 3):
+	for i in range(1, 4):
 		print("Level %d"%(i))
 		file1string = 'speedrunner/lvl-%dpaths.txt'%(i)
 		file1 = open(file1string)
@@ -21,14 +21,22 @@ def main():
 		file2 = open(file2string)
 		string2 = file2.readlines()[0].strip('\n')
 
+		file3string = 'speedrunner/hum-%dpaths.txt'%(i)
+		file3 = open(file3string) 
+		string3 = file3.readlines()[0].strip('\n')
+
 		assert(len(string1) == len(string2))
+		assert(len(string2) == len(string3))
 
 		hd = hamming_distance(string1, string2)
 
-		print("Hamming Distance", hd)
+		#print("Hamming Distance", hd)
 		
-		ld = Levenshtein.distance(string1, string2)
-		print("Edit Distance", ld)
+		ld = Levenshtein.ratio(string1, string2)
+		print("Edit Distance Ratio Between Predicted Path and Speedrunner", ld)
+
+		ld2 = Levenshtein.ratio(string2, string3)
+		print("Edit Distance Ratio between Predicted Path and Completionist", ld2)
 
 
 
