@@ -13,12 +13,12 @@ public class MarioResult {
     
  // Trajectory collection for imitation learning
     public ArrayList<int[][]> obsList;
-    public ArrayList<boolean[]> actList;
+    public ArrayList<int[]> actList;
     public ArrayList<float[]> infoList;
 
     public MarioResult(MarioWorld world, ArrayList<MarioEvent> gameEvents, ArrayList<MarioAgentEvent> agentEvents, 
     		ArrayList<int[][]> obsList,
-    	    ArrayList<boolean[]> actList,
+    	    ArrayList<int[]> actList,
     	    ArrayList<float[]> infoList) {
     	
         this.world = world;

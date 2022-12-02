@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -62,11 +63,17 @@ public class PythonController {
         }
     }
     
-    public static MarioResult collectTrajectory() {
+    public static MarioResult collectTrajectory(String level) {
     	// Use this to collect trajectories from human-input
     	MarioGame game = new MarioGame();
-    	MarioResult result = game.runGame(new agents.human.Agent(), getLevel("./levels/original/lvl-1.txt"), 20, 0, true);
+    	MarioResult result = game.runGame(new agents.human.Agent(), getLevel(level), 20, 0, true);
     	game.killGame();
+    	
+    	File obsData = new File("Data/human/" + level + "obs.txt");
+        obsData.delete();
+        obsData = new File("Data/human/" + level + "obs.txt"); // Always overwrite a new file
+        
+        
     	return result;
     }
 }

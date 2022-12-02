@@ -125,7 +125,7 @@ public class MarioGame {
      * @return statistics about the current game
      */
     public MarioResult playGame(String level, int timer, int marioState) {
-        return this.runGame(new Agent(), level, timer, marioState, true, 30, 2);
+        return this.runGame(new Agent(), level, timer, marioState, true, 30, 2); // EDIT
     }
 
     /**
@@ -193,7 +193,7 @@ public class MarioGame {
     public MarioResult runGame(MarioAgent agent, String level, int timer, int marioState, boolean visuals) {
         return this.runGame(agent, level, timer, marioState, visuals, visuals ? 30 : 0, 2);
     }
-
+    
     /**
      * Run a certain mario level with a certain agent
      *
@@ -288,7 +288,7 @@ public class MarioGame {
         
         // Set up trajectory collection for imitation learning models
         ArrayList<int[][]> obsList = new ArrayList<>();
-        ArrayList<boolean[]> actList = new ArrayList<>(); 
+        ArrayList<int[]> actList = new ArrayList<>(); 
         ArrayList<float[]> infoList = new ArrayList<>();
         
         // Collect the first obs because length of obsList must be len(actList + 1)
@@ -297,11 +297,22 @@ public class MarioGame {
         obs[Math.min(15,pos[0])][Math.min(15, pos[1])] = 98 + this.world.mario.facing; // Place mario tile and keep track of where he is facing
         obsList.add(obs);
         
+        
+        
         while (this.world.gameStatus == GameStatus.RUNNING) {
             if (!this.pause) {
                 //get actions
                 agentTimer = new MarioTimer(MarioGame.maxTime);
+                model =  new MarioForwardModel(this.world.clone());
                 boolean[] actions = this.agent.getActions(model, agentTimer);
+                int[] act = new int[] {0,0,0,0,0};
+                for (int i=0; i<actions.length; i++) {
+                	if (actions[i] == true) {
+                		act[i] = 1;
+                	} else { act[i] = 0;}
+                }
+                System.out.println();
+                actList.add(act);
                 if (MarioGame.verbose) {
                     if (agentTimer.getRemainingTime() < 0 && Math.abs(agentTimer.getRemainingTime()) > MarioGame.graceTime) {
                         System.out.println("The Agent is slowing down the game by: "
@@ -328,11 +339,11 @@ public class MarioGame {
             
             /*---------Trajectory Collection----------*/
             // Collect obs, rew, and info for trajectory
-            
             // Obs
             obs = model.getScreenCompleteObservation(0,0); // NOTE: Went back to using fwd model instead of world
             pos = model.getMarioScreenTilePos();
             obs[Math.min(15,pos[0])][Math.min(15, pos[1])] = 98 + this.world.mario.facing; // Place mario tile and keep track of where he is facing
+            obsList.add(obs);
             
             // Info
             int g = 0; // Count of how many enemies were stomped
@@ -355,7 +366,7 @@ public class MarioGame {
             float reward = vx + d + f - c;  // NOTE: DONT NEED THIS
          
             /*----------------------------------------*/
-           
+            
             
             try{
                 FileWriter myWriter = new FileWriter("positionData.txt", true);
@@ -381,6 +392,80 @@ public class MarioGame {
                 }
             }
         }
+        
+        File obsData = new File("./Data/human/obs.txt");
+        obsData.delete();
+        obsData = new File("./Data/human/obs.txt"); // Always overwrite a new file
+        
+        try{
+            FileWriter myWriter = new FileWriter("./Data/human/obs.txt", true);
+            myWriter.write(obsList.size() + ", " + obsList.get(0).length + ", " + obsList.get(0)[0].length + "\n");
+
+            for (int i=0; i<obsList.size(); i++) {
+            	for (int j=0; j<obsList.get(i).length; j++) {
+            		for (int k=0; k<obsList.get(i)[j].length; k++) {
+            			myWriter.write(obsList.get(i)[j][k] + "\n");
+            		}
+            	}
+            }
+            myWriter.close();
+        }
+        catch(IOException ex){
+            System.out.println("An error occured");
+            return new MarioResult(this.world, gameEvents, agentEvents);
+        }    
+        
+        File actData = new File("./Data/human/acts.txt");
+        actData.delete();
+        actData = new File("./Data/human/acts.txt"); // Always overwrite a new file
+        
+        try{
+            FileWriter myWriter = new FileWriter("./Data/human/acts.txt", true);
+            myWriter.write(actList.size() + ", " + actList.get(0).length + "\n");
+            for (int i=0; i<actList.size(); i++) {
+            	for (int j=0; j<actList.get(i).length; j++) {
+            		System.out.print(actList.get(i)[j] + " ");
+            		myWriter.write(actList.get(i)[j] + "\n");
+            	}
+            	System.out.println();
+//            	myWriter.write("\n")
+            }
+//            for (int i=0; i<actList.size(); i++) {
+//            	for (int j=0; j<actList.get(i).length; j++) {
+//            		if (actList.get(i)[j] == true) {
+//                		myWriter.write("1" + " ");
+//                	} else {
+//                		myWriter.write("0" + " ");
+//                	}
+//            	}
+//            	myWriter.write("\n");
+//            }
+            myWriter.close();
+        }
+        catch(IOException ex){
+            System.out.println("An error occured");
+            return new MarioResult(this.world, gameEvents, agentEvents);
+        }    
+        
+        File infosData = new File("./Data/human/infos.txt");
+        infosData.delete();
+        infosData = new File("./Data/human/infos.txt"); // Always overwrite a new file
+        
+        try{
+            FileWriter myWriter = new FileWriter("./Data/human/infos.txt", true);
+            myWriter.write(infoList.size() + ", " + infoList.get(0).length + "\n");
+            for (int i=0; i<infoList.size(); i++) {
+            	for (int j=0; j<infoList.get(i).length; j++) {
+            		myWriter.write(infoList.get(i)[j] + "\n");
+            	}
+            }
+            myWriter.close();
+        }
+        catch(IOException ex){
+            System.out.println("An error occured");
+            return new MarioResult(this.world, gameEvents, agentEvents);
+        }    
+        
         return new MarioResult(this.world, gameEvents, agentEvents, obsList, actList, infoList);
     }
 
