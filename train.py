@@ -78,7 +78,8 @@ class LRScheduler(LearningRateSchedule):
 
 if (__name__ == '__main__'):
 	filename = './levels.pkl'
-	model_save_path = './models/transformer'
+	model_save_path = './models/transformer_speedrunner'
+	#model_save_path = './models/transformer_completionist'
 	
 	# If we want to train again
 	trainAgain = False
@@ -90,10 +91,10 @@ if (__name__ == '__main__'):
 	d_model = 512  # Dimensionality of model layers' outputs
 	d_ff = 2048  # Dimensionality of the inner fully connected layer
 	n = 6  # Number of layers in the decoder stack
-	 
+
 	# Define the training parameters
-	epochs = 300
-	batch_size = 52
+	epochs = 400
+	batch_size = 54
 	beta_1 = 0.9
 	beta_2 = 0.98
 	epsilon = 1e-9
@@ -162,7 +163,7 @@ if (__name__ == '__main__'):
 			if (step % 8 == 0):
 				print(f'Epoch {epoch + 1} Step {step} Loss {train_loss.result():.4f} Accuracy {train_accuracy.result():.4f}')
 				
-			if (train_accuracy.result() > 0.98):
+			if (train_accuracy.result() > 0.999):
 				break
 
 

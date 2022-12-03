@@ -8,7 +8,7 @@ from tensorflow import convert_to_tensor, int64
 class PrepareDataset:
 	def __init__(self, **kwargs):
 		super(PrepareDataset, self).__init__(**kwargs)
-		self.n_sentences = 42236  # Number of sentences to include in the dataset
+		self.n_sentences = 41936  # Number of sentences to include in the dataset
 		self.train_split = 1.0  # Ratio of the training data split
  
 	# Fit a tokenizer

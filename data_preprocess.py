@@ -57,6 +57,7 @@ if (__name__ == "__main__"):
 
 	# load dataset
 	fileFolder = './Mario-AI-Framework/src/Data/Speedrunner/'
+	#fileFolder = './Mario-AI-Framework/src/Data/Completionist/'
 	
 	# the length of each chunk of level to be stored
 	chunkLen = 320

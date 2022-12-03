@@ -29,6 +29,13 @@ class Inference(Module):
 			
 		return output_str
 		
+	def convert_display(self, output_str):
+		display_str = ''
+		for i in range(len(output_str)):
+			display_str += output_str[i]
+			if ((i + 1) % 32 == 0):
+				display_str += '\n'
+		return display_str
 
 	def __call__(self, prompt, maxInputLen):
 		# Load encoder and decoder tokenizers
@@ -62,14 +69,15 @@ class Inference(Module):
 			
 			print("pred index: ", genI)
 			output_str += self.convert_to_str(dec_tokenizer, decoder_output)[-1]
-			print(output_str)
+			display_str = self.convert_display(output_str)
+			print(display_str)
 		return output_str
 
 # the inference process:
 if (__name__ == '__main__'):
 	# the path to the trained model
-	#model_save_path = './models/transformer_speedrunner.h5'
-	model_save_path = './models/transformer_completionist.h5'
+	model_save_path = './models/transformer_speedrunner.h5'
+	#model_save_path = './models/transformer_completionist.h5'
 
 	# Define the model parameters
 	h = 8  # Number of self-attention heads
@@ -83,10 +91,11 @@ if (__name__ == '__main__'):
 	batch_size = 32
 	
 	# maximum input length
-	maxInputLen = 320;
+	maxInputLen = 256
 	
 	# the prompt
-	prompt = '-----x########XXXXxxxxxxxxx-----';
+	prompt = '-------------xXXXXx-------------'
+	prompt = '--------ox----XXXX----xo--------'
 	
 	# Desired generation length
 	genLen = 1600
