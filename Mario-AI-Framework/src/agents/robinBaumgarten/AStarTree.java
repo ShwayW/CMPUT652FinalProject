@@ -115,8 +115,8 @@ public class AStarTree {
     }
 
     public boolean[] optimise(MarioForwardModel model, MarioTimer timer) {
-        int planAhead = 2;
-        int stepsPerSearch = 2;
+        int planAhead = 3;
+        int stepsPerSearch = 3;
 
         MarioForwardModel originalModel = model.clone();
         ticksBeforeReplanning--;

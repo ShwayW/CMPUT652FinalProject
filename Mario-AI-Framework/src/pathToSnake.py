@@ -3,11 +3,12 @@
 import sys 
 
 def main():
-	directory = "Data/Completionist/"
+	#directory = "Data/Completionist/"
 	#directory = "Data/Speedrunner/"
 	#directory = "levels/original/"
+	directory = "../../output/speedrunner/"
 	i = int(sys.argv[1])
-	level = "lvl-%dpath"%(i)
+	level = "hum-%dpath"%(i)
 
 	# Load in the input path data as a 2d array and output it in a snake format in two different ways
 	source = directory+level+".txt"
