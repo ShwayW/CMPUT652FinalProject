@@ -1,3 +1,6 @@
+# Shway Wang
+# code modified from https://machinelearningmastery.com/joining-the-transformer-encoder-and-decoder-and-masking
+
 from tensorflow import math, cast, float32, linalg, ones, maximum, newaxis
 from numpy import array
 from tensorflow.keras import Model

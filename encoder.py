@@ -1,3 +1,6 @@
+# Shway Wang
+# code modified from https://machinelearningmastery.com/joining-the-transformer-encoder-and-decoder-and-masking
+
 from tensorflow.keras.layers import LayerNormalization, Layer, Dense, ReLU, Dropout
 from multihead_attention import MHAttention
 from positional_encoding import PositionEmbeddingFixedWeights

@@ -1,3 +1,6 @@
+# Shway Wang
+# code modified from https://machinelearningmastery.com/joining-the-transformer-encoder-and-decoder-and-masking
+
 from tensorflow.keras.layers import Layer, Dropout, LayerNormalization, Dense
 from tensorflow.keras.activations import gelu
 from multihead_attention import MHAttention

@@ -1,3 +1,6 @@
+# Shway Wang
+# code modified from https://machinelearningmastery.com/joining-the-transformer-encoder-and-decoder-and-masking
+
 from pickle import load, dump
 from numpy.random import shuffle
 from keras.preprocessing.text import Tokenizer

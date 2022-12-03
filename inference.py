@@ -1,3 +1,6 @@
+# Shway Wang
+# code modified from https://machinelearningmastery.com/joining-the-transformer-encoder-and-decoder-and-masking
+
 from pickle import load
 from tensorflow import Module
 from keras.models import load_model

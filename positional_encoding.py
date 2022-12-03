@@ -1,3 +1,6 @@
+# Shway Wang
+# code modified from https://machinelearningmastery.com/joining-the-transformer-encoder-and-decoder-and-masking
+
 import tensorflow as tf
 from tensorflow import convert_to_tensor, string
 from tensorflow.keras.layers import TextVectorization, Embedding, Layer

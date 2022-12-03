@@ -1,3 +1,6 @@
+# Shway Wang
+# code modified from https://machinelearningmastery.com/joining-the-transformer-encoder-and-decoder-and-masking
+
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers.schedules import LearningRateSchedule
 from tensorflow.keras.metrics import Mean

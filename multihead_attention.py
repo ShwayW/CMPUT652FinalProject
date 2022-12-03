@@ -1,3 +1,6 @@
+# Shway Wang
+# code modified from https://machinelearningmastery.com/joining-the-transformer-encoder-and-decoder-and-masking
+
 from tensorflow import math, matmul, reshape, shape, transpose, cast, float32
 from tensorflow.keras.layers import Dense, Layer
 from keras.backend import softmax
