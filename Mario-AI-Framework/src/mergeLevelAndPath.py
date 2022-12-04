@@ -6,7 +6,7 @@ def main():
 
 	i = int(sys.argv[1])
 	#levelLocation = 'levels/original/'
-	levelLocation = '../../output/speedrunner/'
+	levelLocation = '../../output/completionist/'
 	#levelName = 'lvl-%d.txt'%(i)
 	levelName = 'output_0%dpath.txt'%(i)
 	levelName2 = 'hum-%d.txt'%(i)
