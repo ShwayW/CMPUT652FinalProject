@@ -5,8 +5,8 @@ def main():
 	speedrunnerNp = np.array([])
 	completionistNp = np.array([])
 	for i in range(1, 8):
-		if(i!=10): 
-			folderName = 'speedrunner'
+		if(i!=5): 
+			folderName = 'completionist'
 			print(i)
 			print("Level %d"%(i))
 			file1string = '%s/lvl-%dpaths.txt'%(folderName, i)
