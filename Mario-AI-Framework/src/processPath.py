@@ -20,7 +20,7 @@ def main():
 				levelData[y][x] = 'x'
 
 	#folderName = "Data/Completionist/lvl-%d.txt"%(i)
-	folderName = "../../output/speedrunner/hum-%d.txt"%(i)
+	folderName = "../../output/completionist/hum-%d.txt"%(i)
 	f = open(folderName, "w")
 	for i in range(maxHeight): 
 		level = levelData[i]
