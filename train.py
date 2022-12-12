@@ -81,8 +81,8 @@ class LRScheduler(LearningRateSchedule):
 
 if (__name__ == '__main__'):
 	filename = './levels.pkl'
-	model_save_path = './models/transformer_speedrunner'
-	#model_save_path = './models/transformer_completionist'
+	#model_save_path = './models/transformer_speedrunner'
+	model_save_path = './models/transformer_completionist'
 	
 	# If we want to train again
 	trainAgain = False

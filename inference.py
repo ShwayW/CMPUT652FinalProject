@@ -8,7 +8,137 @@ from keras_preprocessing.sequence import pad_sequences
 from tensorflow import convert_to_tensor, int64, TensorArray, argmax, newaxis, transpose, data
 from model import TransformerModel
 from prepare_dataset import PrepareDataset
- 
+from PIL import Image
+import os
+import glob
+
+def visualize(outputFileName):
+	#Load the set of all sprites
+	sprites = {}
+	for filename in glob.glob(os.path.join("sprites", "*.png")):
+		im = Image.open(filename)
+		splits = filename.split("/")
+		name = splits[-1][:-4]
+		sprites[name] = im.convert('RGBA')
+
+	#This gives the mapping between the tile values and the associated sprite
+	visualization = {}
+	visualization["S"] = "brick"
+	visualization["?"] = "exclamationBox"
+	visualization["Q"] = "exclamationBoxEmpty"
+	visualization["E"] = "enemy"
+	visualization["g"] = "enemy"
+	visualization["U"] = "exclamationBox"
+	visualization["?"] = "exclamationBox"
+	visualization["#"] = "pyramind"
+	visualization["<"] = "bushTopLeft"
+	visualization[">"] = "bushTopRight"
+	visualization["["] = "bushLeft"
+	visualization["]"] = "bushRight"
+	visualization["o"] = "coin"
+	visualization["B"] = "arrowTop"
+	visualization["b"] = "arrowBottom"
+	visualization["x"] = "mario"
+	visualization["L"] = "exclamationBox"
+	visualization["@"] = "exclamationBox"
+	visualization["T"] = "pipe" 
+	visualization["C"] = "brick"
+	visualization["M"] = "mario"
+	visualization["k"] = "greenkoopa"
+	visualization["r"] = "redkoopa"
+	visualization["F"] = "finishline"
+	visualization["!"] = "exclamationBox"
+	visualization["t"] = "pipe"
+	visualization["y"] = "spiky"
+	visualization["R"] = "redkoopa"
+	visualization["K"] = "paratroopa"
+	visualization["*"] = "bulletbill"
+	visualization["|"] = "backgroundtile"
+	visualization["%"] = "backgroundtile"
+	
+	# This reads in the level
+	level = {}
+	with open(outputFileName + ".txt") as fp:
+		y = 0
+		for line in fp:
+			level[y] = line.strip("\n")
+			y += 1
+			
+	# Multiply by 18 here as each of the sprites is 18*18
+	# This creates an initially blank image for the level
+	image = Image.new("RGB", (18 * len(level[0]), 18 * len(level.keys())), color=(223, 245, 244))
+	
+	# This loads the level image's pixels so we can edit them
+	pixels = image.load()
+	maxY = len(level.keys())
+	maxX = len(level[0])
+
+
+	for y in range(0, maxY):
+		for x in range(0, maxX):
+			imageToUse = None
+			if level[y][x] in visualization.keys():
+				imageToUse = sprites[visualization[level[y][x]]]
+			elif level[y][x]=="X":
+				#Rules we've added to ensure the correct sprite is used
+				if y==maxY-2:
+					imageToUse = sprites["groundTop"]
+				elif y==maxY-1:
+					#Check if we have a solid tile above this and change which sprite we use if so
+					if level[y-1][x]=="X":
+						imageToUse = sprites["groundBottom"]
+					else:
+						imageToUse = sprites["groundTop"]
+				else:
+					imageToUse = sprites["stair"]
+
+			elif level[y][x]!='-':
+				print(level[y][x])
+			if not imageToUse == None:
+				#If we have a sprite (imageToUse) copy its pixels over
+				pixelsToUse = imageToUse.load()
+				for x2 in range(0, 18):
+					for y2 in range(0, 18):
+						if pixelsToUse[x2, y2][3]>0:
+							pixels[x * 18 + x2, y * 18 + y2] = pixelsToUse[x2, y2][0:-1]
+	#Save the output to a jpeg
+	image.save(outputFileName + ".png", "PNG")
+	
+	
+
+def snakeToPath(sourceFileName, destinationFileName):
+	stringIndex = 0
+	maxHeight = 16
+	top = True
+
+	sourceFile = open(sourceFileName + '.txt', "r")
+	destFile = open(destinationFileName + '.txt', "w")
+
+	line = sourceFile.readline()
+	line = line.strip("\n")
+
+	outputStrings = ["" for j in range(maxHeight)]
+
+	for i in range(len(line)):
+		if(top):
+			outputStrings[stringIndex] += line[i]
+			if(stringIndex< maxHeight-1):
+				stringIndex = stringIndex+1 
+			else: 
+				top = False 
+		else:
+			outputStrings[stringIndex] += line[i]
+			if(stringIndex):
+				stringIndex = stringIndex - 1 
+			else:
+				top = True 
+
+	finalString = "\n".join(outputStrings)
+	destFile.write(finalString)
+	sourceFile.close()
+	destFile.close()
+	
+
 class Inference(Module):
 	def __init__(self, inferencing_model, genLen, **kwargs):
 		super(Inference, self).__init__(**kwargs)
@@ -78,6 +208,10 @@ class Inference(Module):
 
 # the inference process:
 if (__name__ == '__main__'):
+	# destination folder name of Snake-path files
+	#destination_path = 'output/speedrunner/'
+	destination_path = 'output/completionist/'
+
 	# the path to the trained model
 	#model_save_path = './models/transformer_speedrunner.h5'
 	model_save_path = './models/transformer_completionist.h5'
@@ -96,12 +230,20 @@ if (__name__ == '__main__'):
 	# maximum input length
 	maxInputLen = 320
 	
-	# the prompt
-	#prompt = '-------------xXXXXx-------------'
-	prompt = '-------x----XXXXooo-x-----------'
+	# the prompt, each is 32-tile-long
+	prompts =  ['-------x------XXXXooo-x---------',
+				'-------------xXXXXx-------------',
+				'-----------xx-XXXX-xx-----------',
+				'------------x-XXXX-x------------',
+				'------------x-XXXX--x-----------',
+				'-----------x--XXXX-x------------',
+				'-----------xxxXXXXxxx-----------',
+				'--------------XXXX--------------',
+				'------------x-XXXX-x------------',
+				'-----------x--XXXX--x-----------',]
 	
 	# Desired generation length
-	genLen = 3200
+	genLen = 0
 	
 	# Use traned model
 	useTrainedModel = True
@@ -136,16 +278,34 @@ if (__name__ == '__main__'):
 	else:		
 		inferencing_model = TransformerModel(dec_vocab_size, dec_seq_max_length, h, d_k, d_v, d_model, d_ff, n, 0)
 	
-	inference = Inference(inferencing_model, genLen + len(prompt))
+	inference = Inference(inferencing_model, genLen)
 	
-	# preprocess the prompt to char by char
-	preced_prompt = []
-	for i in range(len(prompt)):
-		preced_prompt.append(prompt[i])
+	#############################################
+	# The batch inference loop
+	#############################################
+	for promptI in range(len(prompts)):
+		# preprocess the prompt to char by char
+		preced_prompt = []
+		for i in range(len(prompts[promptI])):
+			preced_prompt.append(prompts[promptI][i])
+		
+		# predict the level
+		pred = inference([preced_prompt], maxInputLen)
+		
+		# write the level to the source file in Snake-path format
+		sourceFileName = destination_path + 'output_' + str(promptI + 1)
+		fs = open(sourceFileName + '.txt', "w")
+		fs.write(pred)
+		fs.close()
+
+		# convert the Snake format to path format
+		destFileName = destination_path + 'output_' + str(promptI + 1) + 'path'
+		snakeToPath(sourceFileName, destFileName)
+		visualize(destFileName)
+		
+		
+		
 	
-	pred = inference([preced_prompt], maxInputLen)
-	
-	print(pred)
 	
 	
 	
