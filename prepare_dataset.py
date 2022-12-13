@@ -6,6 +6,7 @@ from numpy.random import shuffle
 from keras.preprocessing.text import Tokenizer
 from keras_preprocessing.sequence import pad_sequences
 from tensorflow import convert_to_tensor, int64
+from os import path
  
  
 class PrepareDataset:
@@ -28,7 +29,7 @@ class PrepareDataset:
 		print(tokenizer.word_index)
 		return len(tokenizer.word_index) + 1
  
-	def __call__(self, filename, **kwargs):
+	def __call__(self, filename, level_style, **kwargs):
 		# Load a clean dataset
 		clean_dataset = load(open(filename, 'rb'))
 
@@ -44,12 +45,16 @@ class PrepareDataset:
 		# convert to list
 		for i in range(len(train)):
 			train[i] = list(train[i])
-
+		
 		# Prepare tokenizer for the decoder input
 		dec_tokenizer = self.create_tokenizer(train)
 		
-		# store the tokenizer
-		dump(dec_tokenizer, open('levels_tokenizer.pkl', 'wb'))
+		if (level_style == 'speedrunner'):
+			# load the tokenizer
+			dump(dec_tokenizer, open('speedrunner_levels_tokenizer.pkl', 'wb'))
+		elif (level_style == 'completionist'):
+			# store the tokenizer
+			dump(dec_tokenizer, open('completionist_levels_tokenizer.pkl', 'wb'))
 		
 		# compute the decoder max sequence length and vocabulary size
 		dec_seq_max_length = self.find_seq_max_length(train)

@@ -80,9 +80,15 @@ class LRScheduler(LearningRateSchedule):
 
 
 if (__name__ == '__main__'):
-	filename = './levels.pkl'
-	#model_save_path = './models/transformer_speedrunner'
-	model_save_path = './models/transformer_completionist'
+	level_style = 'speedrunner'
+	#level_style = 'completionist'
+
+	if (level_style == 'speedrunner'):
+		datasetFilename = './speedrunner_levels.pkl'
+		model_save_path = './models/transformer_speedrunner.h5'
+	elif (level_style == 'completionist'):
+		datasetFilename = './completionist_levels.pkl'
+		model_save_path = './models/transformer_completionist.h5'
 	
 	# If we want to train again
 	trainAgain = False
@@ -108,7 +114,7 @@ if (__name__ == '__main__'):
 	
 	# Prepare the training and test splits of the dataset
 	dataset = PrepareDataset()
-	trainProc, train_orig, dec_seq_max_length, dec_vocab_size = dataset(filename)
+	trainProc, train_orig, dec_seq_max_length, dec_vocab_size = dataset(datasetFilename, level_style)
 	
 	print("Maximum sequence length: ", dec_seq_max_length)
 	print("Vocabulary size: ", dec_vocab_size)
@@ -136,7 +142,7 @@ if (__name__ == '__main__'):
 			break
 		
 		# load the weights for the model
-		training_model.load_weights(model_save_path + '.h5')
+		training_model.load_weights(model_save_path)
 		print("Restored from {}".format(model_save_path))
 		training_model.summary()
 
@@ -174,7 +180,7 @@ if (__name__ == '__main__'):
 		print("Epoch %d: Training Loss %.4f, Training Accuracy %.4f" % (epoch + 1, train_loss.result(), train_accuracy.result()))
 
 		# Save a checkpoint after every epochs
-		training_model.save_weights(model_save_path + '.h5')
+		training_model.save_weights(model_save_path)
 		
 		print("Saved checkpoint at epoch %d at path %s" % (epoch + 1, model_save_path))
  

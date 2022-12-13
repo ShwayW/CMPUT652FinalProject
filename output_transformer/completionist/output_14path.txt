@@ -1,0 +1,16 @@
+|------------------------S--xxxxSxx-xxxxx--xxxxxS----TX---xxxxT-x-xxxxTxx--xx--xx----xx-T######------------S--xxxxSxx-xxxxx--x---xx-x---x-S-!-------x--xxx#####--------xx---------x----xxETxxxxxxTTxx---
+|x----------------xx--x-x-x---xx--x--x#xT--xx--x-----T------x-T-x-xxTxT-----T--x----xxx-Tx#####-----xx--x-x-x---xx--x--x#x#--x#--xx-x-x-x-x---------x-xxxx#####-------------------g-x---x-TxxxtxxxTxx---
+|x----------------Tx--T-x-x-----x-x---#xTx--#---x----T------x-T-x-T-TxT-----Tx-x----x-#xTx#####-----Tx--T-x-x-----x-x---#x#x-x#---x---t-x-x-x-------x-tx#x#x###------x------------T-x---x-T-xxtxx-T-x---
+|----S-S-S-S-S----T---T-x-xS---Sx-x-#-#-T---#-xSx-x-x-k-x---x-T-x-T-T-T---x-Tx----x-x-#xTx#x###-----T---T-x-xS---Sx-x-#-#-#---#x#-x---t-x-x-x-x-g-x-x-t-#x#x###-------------x-x-x-T---g-x-TUxStxx-T-x-x-
+|xX-X-XxXx-x-x--X-X-X-X-X-X-----X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XxXxXxX-X-X-X-X-X-X-X-----X-X-X-X-X---X-X-X-X-X-X-X-X-X-X-X-X-X-X-XxXxX-X-XxX-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-
+|xXxX-X-X----x--X-X-X-X-X-X-----X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XxX-X-X-X-X-X-X-X-X-----X-X-X-X-X---X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XxXxX-XxX-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-
+|xXxX-X-X-------X-X-X-X-X-X-X-X-X-X-X---X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XxX-X-X-XxX-X-X-X-X-X-X-X-X-X-X---X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XxXxX-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-
+|-X-XxX-X------xXxX-X-X-X-X-X-X-X-X-X---X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XxX-X-X-X-X-X-X-X-X-X-X-X-X---X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-XxX-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-
+|----x---------x--T---T-x---x-x-x-x-#---T-#-x-x-x-x-x-x-----T---x-T-T-T-x-x-T---x-x-#-#-T-#-#----x--T---T-x---x-x-x-x-#-#---#-#---x-t-x-x-x-x-x-g-x-t-#-#-#-#-#--x------#---x-x-x-T---x-T---t---T---x-x-
+|-----------------T---T-x-x-x---x-x-#---T-#-x-x-x-------x---T---x-T-T-T-x-x-T---x-----#-T-#-#-------T---T-x-x-x---x-x-#-#---#-#---x-t-x---x-x-------t-x-#-#-#-#---------F-------x-T-x---T---t---T-------
+|-----------------x-x-x-x-x-x---x-x-x---T-#-x-----------x-x-T---x-x-T-T-x-x-T---x-----#-T-#-#-------x-x-x-x-x-x---x-x-x-#---#---------x-------------x-x-#-#-#-#---------x-------x-x-----T---t-x-T-------
+|----x-----------xx-x-----x-x-S-S-x-x-----#-x-S-S-----X-x-x-T-x-x-x---T-x-x-x-------x-x-T-#-#----x-xx-x-----x-x-S-S-x-x-#---#-------x-x-x-S-S---------x-x-#-#-#-----------------x-------T-x-x-x-T-------
+|----x---------x--xxx---S-----x-x---x---x-----x-x-----T-----x-x---x---x-----x---------x---#-#----x--x-x---S-----x-x---x-x-----------------------------x-x-#-#-#--x-x--------------------x-x-x-x-T-------
+|--x---x-------x--xx------------x---x---x-----x-x-----T-----------x-x-------x---------x---#-#--x----xx------------x---x-----x-------------------------x-x-x-#x#--x----x---------------------x-x-x-------
+%--x---x----------xx------------------x-x-x-----------T-------------x-------x-x-------x-x---#K-x----xx----------------------x---x-----------------------x-x-#x#-------x---------------------x-x---x-----
+o-----SkSxSxSx----xx------U-----S-------------S-S-----------------------------x---------x--x#x-x----xx------U-----S-------x-x-xxx-------------------------xxxx#x----xx----------------------S-S---x-----

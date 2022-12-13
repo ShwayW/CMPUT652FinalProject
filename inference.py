@@ -9,6 +9,7 @@ from tensorflow import convert_to_tensor, int64, TensorArray, argmax, newaxis, t
 from model import TransformerModel
 from prepare_dataset import PrepareDataset
 from PIL import Image
+import time
 import os
 import glob
 
@@ -170,9 +171,12 @@ class Inference(Module):
 				display_str += '\n'
 		return display_str
 
-	def __call__(self, prompt, maxInputLen):
-		# Load encoder and decoder tokenizers
-		dec_tokenizer = self.load_tokenizer('levels_tokenizer.pkl')
+	def __call__(self, prompt, maxInputLen, level_style):
+		# Load decoder tokenizer
+		if (level_style == 'speedrunner'):
+			dec_tokenizer = self.load_tokenizer('speedrunner_levels_tokenizer.pkl')
+		elif (level_style == 'completionist'):
+			dec_tokenizer = self.load_tokenizer('completionist_levels_tokenizer.pkl')
 		
 		# Prepare the output <START> token by tokenizing, and converting to tensor
 		output_start = dec_tokenizer.texts_to_sequences(prompt)
@@ -208,13 +212,17 @@ class Inference(Module):
 
 # the inference process:
 if (__name__ == '__main__'):
-	# destination folder name of Snake-path files
-	#destination_path = 'output/speedrunner/'
-	destination_path = 'output/completionist/'
-
-	# the path to the trained model
-	#model_save_path = './models/transformer_speedrunner.h5'
-	model_save_path = './models/transformer_completionist.h5'
+	level_style = 'speedrunner'
+	#level_style = 'completionist'
+	
+	if (level_style == 'speedrunner'):
+		datasetFilename = './speedrunner_levels.pkl'
+		model_save_path = './models/transformer_speedrunner.h5'
+		destination_path = 'output_transformer/speedrunner/'
+	elif (level_style == 'completionist'):
+		datasetFilename = './completionist_levels.pkl'
+		model_save_path = './models/transformer_completionist.h5'
+		destination_path = 'output_transformer/completionist/'
 
 	# Define the model parameters
 	h = 8  # Number of self-attention heads
@@ -230,27 +238,55 @@ if (__name__ == '__main__'):
 	# maximum input length
 	maxInputLen = 320
 	
+	# Random 32-tile strings
+	'''
+	K#SF!L1-E!Eo-g|?EMFMkEbUrb!ooMK@
+	M@2TS|EUEU#XxU@bo@1*#-|T1QrrX-E|
+	1?2@C%!rFk|ES!LkXBtBbB*x-LTboFto
+	2UFXt@xgyr@k#MM2XRytTFCC2Er2CCFy
+	QFkt@SMbk-byT#|Qx@*r1F%x?y!|-xtX
+	F#-E|Q?QtQ%2g2bBoCFxBKL%ML*kUCQy
+	rTL1x11RU|@gEb-2U-ByrBro*yo!1oCb
+	KR1LCC?1Rro@?KR%E|yXy##!X*b-rCx%
+	g@XETTXbRy|Eo2@RESX%%FR%MF@bBM@b
+	22B-o@o-KF#t-RkMytLBLF!!%?L??LC!
+	'''
+	
 	# the prompt, each is 32-tile-long
-	prompts =  ['-------x------XXXXooo-x---------',
-				'-------------xXXXXx-------------',
-				'-----------xx-XXXX-xx-----------',
-				'------------x-XXXX-x------------',
-				'------------x-XXXX--x-----------',
-				'-----------x--XXXX-x------------',
-				'-----------xxxXXXXxxx-----------',
-				'--------------XXXX--------------',
-				'------------x-XXXX-x------------',
-				'-----------x--XXXX--x-----------',]
+	prompts =  ['--------------XXXX--------------', # lvl-1
+				'---SSSSSSSSSSSXXXX--------------', # lvl-2
+				'-------------xXXXXx-------------', # lvl-3
+				'----------xxxMXXXXxxx-----------', # lvl-4
+				'--------------XXXXM-------------', # lvl-5
+				'-------------xXXXXxxx-----------', # lvl-6
+				'--xSSSSSSSSSSSXXXX----------xx--', # lvl-8
+				'-----------xxxXXXX---x----------', # lvl-9
+				'------------xxXXXX--xx----------', # lvl-11
+				'----------xxxxXXXXx-------------', # lvl-12
+				# random prompts
+				'K#SF!L1-E!Eo-g|?EMFMkEbUrb!ooMK@', # random
+				'2UFXt@xgyr@k#MM2XRytTFCC2Er2CCFy',
+				'1?2@C%!rFk|ES!LkXBtBbB*x-LTboFto',
+				'M@2TS|EUEU#XxU@bo@1*#-|T1QrrX-E|',
+				'QFkt@SMbk-byT#|Qx@*r1F%x?y!|-xtX',
+				'F#-E|Q?QtQ%2g2bBoCFxBKL%ML*kUCQy',
+				'rTL1x11RU|@gEb-2U-ByrBro*yo!1oCb',
+				'KR1LCC?1Rro@?KR%E|yXy##!X*b-rCx%',
+				'g@XETTXbRy|Eo2@RESX%%FR%MF@bBM@b',
+				'22B-o@o-KF#t-RkMytLBLF!!%?L??LC!']
 	
 	# Desired generation length
-	genLen = 0
+	genLen = 3200
+	
+	# segment length
+	segLen = 320
 	
 	# Use traned model
 	useTrainedModel = True
 
 	# Prepare the training and test splits of the dataset
 	dataset = PrepareDataset()
-	trainProc, train_orig, dec_seq_max_length, dec_vocab_size = dataset('./levels.pkl')
+	trainProc, train_orig, dec_seq_max_length, dec_vocab_size = dataset(datasetFilename, level_style)
 	
 	print("Maximum sequence length: ", dec_seq_max_length)
 	print("Vocabulary size: ", dec_vocab_size)
@@ -278,30 +314,46 @@ if (__name__ == '__main__'):
 	else:		
 		inferencing_model = TransformerModel(dec_vocab_size, dec_seq_max_length, h, d_k, d_v, d_model, d_ff, n, 0)
 	
-	inference = Inference(inferencing_model, genLen)
-	
 	#############################################
 	# The batch inference loop
 	#############################################
 	for promptI in range(len(prompts)):
+		start = time.time()
+	
+		# get the current prompt
+		prompt = prompts[promptI]
+		
 		# preprocess the prompt to char by char
 		preced_prompt = []
-		for i in range(len(prompts[promptI])):
-			preced_prompt.append(prompts[promptI][i])
+		for i in range(len(prompt)):
+			preced_prompt.append(prompt[i])
 		
 		# predict the level
-		pred = inference([preced_prompt], maxInputLen)
+		entirePred = ''
+		for segI in range(0, genLen, segLen):
+			inference = Inference(inferencing_model, segLen)
+			pred = inference([preced_prompt], maxInputLen, level_style)
+			entirePred += pred
+			
+			# preprocess the prompt to char by char
+			preced_prompt = []
+			for i in range(len(pred[-32:])):
+				preced_prompt.append(pred[-32:][i])
+			
 		
 		# write the level to the source file in Snake-path format
 		sourceFileName = destination_path + 'output_' + str(promptI + 1)
 		fs = open(sourceFileName + '.txt', "w")
-		fs.write(pred)
+		fs.write(entirePred)
 		fs.close()
 
 		# convert the Snake format to path format
 		destFileName = destination_path + 'output_' + str(promptI + 1) + 'path'
 		snakeToPath(sourceFileName, destFileName)
 		visualize(destFileName)
+		
+		end = time.time()
+		print("time it took to generate one level: ", end - start)
 		
 		
 		

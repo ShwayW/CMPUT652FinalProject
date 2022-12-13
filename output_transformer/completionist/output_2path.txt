@@ -1,0 +1,16 @@
+-----------------------------------------------------------------------------------------xxxxxx------x-xxx-x--x-----------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------x-x-x---xx-SxS-SxSx-x-----------------------------------------------------------------------------------------
+----S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S---xxxxxxxx-x-xxxxx-xx-x-x-x-x-x----S-S-S-S-S-S-S-S-S-S-S-S-S-------S-S-S-----S----------------------------S-S-S-S-S-S-S-
+----------------------------------------------------S---S-S-SS--SSSS------S-S---SSSSSSSSSS-S--xxx---xx-----x--xx-----------------------------------S-S-SSSSSSSSSSSSSSSSSSSSSSSSSSSS-----S-S-S-S-S-S-S-S-
+-----S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-S-SxS-S-S-SSS-SSSSSSS-SSSSS-S-S-SSSSS-S--------------xx----xxS-S-SxS-xx--S-S-S-S-S-S-S-S-SxS-S-S-S-S-----SSSSSSSSSSSSSSSS----------------------SSSSSSSSSSSSSSSS
+----------------------x-x-------------x-o-o-x-----S--S---S-SSS---S-S--S----S-S---------------xxxx---xS-----S---x-x---------------x-x--------------SSSSSSSSSSSSSSSS-xxx-xxx--------------SSSSSSSSSSSSSSSS
+--------------------x-----------x-----x-x-x-------SS-S---S-SSS---S-S--Sg---S-Sx-----------x-x-SSS---S----------x-x---------------xx----------x----SSSSSSSSSSSSSSSSxxxxxTx---------------SSxSxSxSxSxS-SxS
+--------------------x--x-x----x-x-----xoSoSxUxx---SS--------SS---S----SS------xxx--------x-x------xx-----------S-----------------xx-xx-----x---x--S-SxSxxxxxxx-xxxxxxxTT--x--------xx---SSxSxSxSxSxSxSxS
+-------------------xxx-x-x----xxx-----ox-xSxSxx---SSx-x-o-o-SS---So---SS--g-g-x-x--------xxx-----xxx---SxS-U--x----------------x----xx-----x--xx--S-xxxxxxxxxxxxxxxx-xTT---x-----xx--x----oxoxoxoxoxxxxx
+----x---@-Q-Q---x-xx-x-xxxx-x-x-xx--xSSS-SSxSx----SSS-x-S-S-SS---SS---SS--S-S----x-------xxx-----xxS-S--xx----S-x-xx-x-----x-x-x-T---x---x-xx--x---xxoxoooooooxxxxxx-xTT---x-----xx--x----SxSxSxSxSxxxxx
+----x---x---------xx-x-x-xxCx--xxx---S-S---oxx-----SSxxx-o-o-S---SxUx--C---x-x---x---xxxxg##----xx----SxSxSxx---S-xx-x-x---xxT-xxT---x---x-xx--x-x-UoSoSSSSSSSxxxx#xxxTT-------xxxx--x---xxo-o-o-o-oxxxx
+-x-x----xQxQx-xx-xxx-#-#-xx-xx-xxx---S-S---Sxx-x---SSSxx-S-S-S---SxSx--S---S-S---x---x---###--Sxxx-xSx-xSxSxS------xxt-x---xxTxxTT-------xx#x--S-x--S-S-------xxx##xxxTT---S---x-x#-SxxxxUxSxSxSxSxSxx#x
+-xxx-xx-x-x-x-gx-xx#-#-#-#xxx#-xxxxxxxx-k-x-xx-xx-xx-Sxxx-k-x-x-xxxxx-x-xxx------x---x-g####---SSxxx-xxrSXSX--------xtx--x-kTTxxTT-----x-x-##---x-xxxx-xxxxxxxxx###x-xTT---Sx--x-##--SSxx-x-x-x-k-x-xx##
+XxXxXxX-XxXxX-XgX#X#X#X#X#XxX#X#XxXxXxXxX-X-XxXxX-XxXSXxX-X-X-X-XxXxX-X-XxX-X----xxxx--#####-------xxXxX-X-X-------XxXtX-X-XTX-XTX---XxX-X-X#-S-S-xxxxxxxxkkxxx####x-kTT---Sxxxx###-----XxXxXxXxXxXxXxX#
+XMX-XxXxXxXxXxX#X#X#X#X#X#XEX#X#XxXxXxXxXkXxXxX-XxXxX-XxXxXxXgXgXxXxXxXxXxX-X---XXXXXXXXXXXX-------XxXxXxX-X-------XxXtXxXxXTX-XTX---XxXxX#X#-----XXXXXXXXXXXXXXXXXXXXXXX--XXXXXXXX-----XxXxXxXxXkXxX#X#
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX--XXXXXXXXXXXX-------XXXXXxXxXXX------XXXXXXXXXXXXXX--XXXXXXXXXX----XXXXXXXXXXXXXXXXXXXXXXX--XXXXXXXX-----XXXXXXXXXXXXXXXX

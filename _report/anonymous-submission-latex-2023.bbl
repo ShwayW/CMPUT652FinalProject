@@ -1,0 +1,54 @@
+\begin{thebibliography}{8}
+\providecommand{\natexlab}[1]{#1}
+
+\bibitem[{Dahlskog and Togelius(2014)}]{dahlskog2014multi}
+Dahlskog, S.; and Togelius, J. 2014.
+\newblock A multi-level level generator.
+\newblock In \emph{Proceedings of the IEEE Conference on Computational
+  Intelligence and Games}, 1--8. IEEE.
+
+\bibitem[{Hussein et~al.(2017)Hussein, Gaber, Elyan, and
+  Jayne}]{hussein2017imitation}
+Hussein, A.; Gaber, M.~M.; Elyan, E.; and Jayne, C. 2017.
+\newblock Imitation learning: A survey of learning methods.
+\newblock \emph{ACM Computing Surveys (CSUR)}, 50(2): 1--35.
+
+\bibitem[{Karakovskiy and Togelius(2012)}]{karakovskiy2012mario}
+Karakovskiy, S.; and Togelius, J. 2012.
+\newblock The mario ai benchmark and competitions.
+\newblock \emph{IEEE Transactions on Computational Intelligence and AI in
+  Games}, 4(1): 55--67.
+
+\bibitem[{Summerville et~al.(2016)Summerville, Guzdial, Mateas, and
+  Riedl}]{summerville2016learning}
+Summerville, A.; Guzdial, M.; Mateas, M.; and Riedl, M.~O. 2016.
+\newblock Learning player tailored content from observation: Platformer level
+  generation from video traces using lstms.
+\newblock In \emph{Twelfth artificial intelligence and interactive digital
+  entertainment conference}.
+
+\bibitem[{Summerville and Mateas(2016)}]{summerville2016super}
+Summerville, A.; and Mateas, M. 2016.
+\newblock Super mario as a string: Platformer level generation via lstms.
+\newblock In \emph{Proceedings of the 1st International Joint Conference of
+  DiGRA and FDG}.
+
+\bibitem[{Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones,
+  Gomez, Kaiser, and Polosukhin}]{vaswani2017attention}
+Vaswani, A.; Shazeer, N.; Parmar, N.; Uszkoreit, J.; Jones, L.; Gomez, A.~N.;
+  Kaiser, {\L}.; and Polosukhin, I. 2017.
+\newblock Attention is all you need.
+\newblock \emph{Advances in neural information processing systems}, 30.
+
+\bibitem[{Yannakakis et~al.(2013)Yannakakis, Spronck, Loiacono, and
+  Andr{\'e}}]{yannakakis2013player}
+Yannakakis, G.~N.; Spronck, P.; Loiacono, D.; and Andr{\'e}, E. 2013.
+\newblock Player modeling.
+
+\bibitem[{Yannakakis and Togelius(2015)}]{yannakakis2015experience}
+Yannakakis, G.~N.; and Togelius, J. 2015.
+\newblock Experience-driven procedural content generation.
+\newblock In \emph{Proceedings of the International Conference on Affective
+  Computing and Intelligent Interaction (ACII)}, 519--525. IEEE.
+
+\end{thebibliography}

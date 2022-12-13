@@ -1,0 +1,5 @@
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 34 Remaining Time: 92
+Mario State: 0 (Mushrooms: 10 Fire Flowers: 0)
+Total Kills: 20 (Stomps: 11 Fireballs: 0 Shells: 5 Falls: 4)
+Bricks: 5 Jumps: 109 Max X Jump: 109.36365 Max Air Time: 35

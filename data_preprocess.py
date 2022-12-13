@@ -55,12 +55,16 @@ def save_clean_data(chunks, filename):
 
 
 if (__name__ == "__main__"):
-	# save path
-	savePath = 'levels.pkl'
+	#level_style = 'speedrunner'
+	level_style = 'completionist'
 
-	# load dataset
-	fileFolder = './Mario-AI-Framework/src/Data/Speedrunner/'
-	#fileFolder = './Mario-AI-Framework/src/Data/Completionist/'
+	# save path
+	if (level_style == 'speedrunner'):
+		savePath = 'speedrunner_levels.pkl'
+		fileFolder = './Mario-AI-Framework/src/Data/Speedrunner/'
+	elif (level_style == 'completionist'):
+		savePath = 'completionist_levels.pkl'
+		fileFolder = './Mario-AI-Framework/src/Data/Completionist/'
 	
 	# the length of each chunk of level to be stored
 	chunkLen = 320
