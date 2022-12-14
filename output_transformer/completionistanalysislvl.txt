@@ -1,0 +1,79 @@
+../../output_transformer/completionist/output_1path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 1 Remaining Time: 51
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 2 (Stomps: 2 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 14 Max X Jump: 193.7439 Max Air Time: 18       
+****************************************************************
+../../output_transformer/completionist/output_2path.txt
+****************************************************************
+Game Status: TIME_OUT Percentage Completion: 0.26469156
+Lives: 0 Coins: 6 Remaining Time: 0
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)      
+Bricks: 0 Jumps: 109 Max X Jump: 104.4335 Max Air Time: 14      
+****************************************************************
+../../output_transformer/completionist/output_3path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 3 Remaining Time: 51
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 2 (Stomps: 2 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 14 Max X Jump: 230.16919 Max Air Time: 22
+****************************************************************
+../../output_transformer/completionist/output_4path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 0 Remaining Time: 49
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 6 (Stomps: 5 Fireballs: 0 Shells: 0 Falls: 1)
+Bricks: 0 Jumps: 19 Max X Jump: 171.8075 Max Air Time: 17
+****************************************************************
+../../output_transformer/completionist/output_5path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.78090256
+Lives: 0 Coins: 5 Remaining Time: 52
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 15 Max X Jump: 170.26208 Max Air Time: 16
+****************************************************************
+../../output_transformer/completionist/output_6path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 4 Remaining Time: 50
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 3 (Stomps: 2 Fireballs: 0 Shells: 0 Falls: 1)
+Bricks: 0 Jumps: 17 Max X Jump: 321.18372 Max Air Time: 30
+****************************************************************
+../../output_transformer/completionist/output_7path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.2934339
+Lives: 0 Coins: 0 Remaining Time: 57
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 6 Max X Jump: 129.08987 Max Air Time: 14
+****************************************************************
+../../output_transformer/completionist/output_8path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 4 Remaining Time: 51
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 3 (Stomps: 3 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 15 Max X Jump: 301.96924 Max Air Time: 27
+****************************************************************
+../../output_transformer/completionist/output_9path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 0 Remaining Time: 60
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 0 Max X Jump: 0.0 Max Air Time: 0
+****************************************************************
+../../output_transformer/completionist/output_10path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 2 Remaining Time: 51
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 17 Max X Jump: 160.50131 Max Air Time: 16

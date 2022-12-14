@@ -1,0 +1,73 @@
+../../output_transformer/speedrunner/output_1path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 9 Remaining Time: 50
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 1 (Stomps: 1 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 17 Max X Jump: 209.02283 Max Air Time: 19
+****************************************************************
+../../output_transformer/speedrunner/output_2path.txt
+Unplayable
+../../output_transformer/speedrunner/output_3path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 1 Remaining Time: 51
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 2 (Stomps: 2 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 15 Max X Jump: 160.93958 Max Air Time: 14
+****************************************************************
+../../output_transformer/speedrunner/output_4path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 0 Remaining Time: 51
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 4 (Stomps: 4 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 14 Max X Jump: 249.93036 Max Air Time: 25
+****************************************************************
+../../output_transformer/speedrunner/output_5path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 2 Remaining Time: 49
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 3 (Stomps: 3 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 18 Max X Jump: 182.97144 Max Air Time: 17
+****************************************************************
+../../output_transformer/speedrunner/output_6path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.0028894471
+Lives: 0 Coins: 0 Remaining Time: 60
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 0 Max X Jump: 0.0 Max Air Time: 0
+****************************************************************
+../../output_transformer/speedrunner/output_7path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 6 Remaining Time: 27
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 6 (Stomps: 3 Fireballs: 0 Shells: 0 Falls: 3)
+Bricks: 0 Jumps: 60 Max X Jump: 186.68262 Max Air Time: 19
+****************************************************************
+../../output_transformer/speedrunner/output_8path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 9 Remaining Time: 49
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 5 (Stomps: 5 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 19 Max X Jump: 261.8274 Max Air Time: 33
+****************************************************************
+../../output_transformer/speedrunner/output_9path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 0 Remaining Time: 51
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 4 (Stomps: 4 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 15 Max X Jump: 252.18137 Max Air Time: 23
+****************************************************************
+../../output_transformer/speedrunner/output_10path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 0 Remaining Time: 58
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 3 Max X Jump: 66.26962 Max Air Time: 12

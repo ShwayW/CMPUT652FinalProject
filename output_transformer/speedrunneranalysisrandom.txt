@@ -1,0 +1,81 @@
+****************************************************************
+../../output_transformer/speedrunner/output_11path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.18051288
+Lives: 0 Coins: 1 Remaining Time: 58
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 3 Max X Jump: 116.96924 Max Air Time: 13
+****************************************************************
+../../output_transformer/speedrunner/output_12path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.04492189
+Lives: 0 Coins: 1 Remaining Time: 60
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 0 Max X Jump: 0.0 Max Air Time: 0
+****************************************************************
+../../output_transformer/speedrunner/output_13path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 2 Remaining Time: 48
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 15 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 15)
+Bricks: 0 Jumps: 22 Max X Jump: 173.4032 Max Air Time: 24
+****************************************************************
+../../output_transformer/speedrunner/output_14path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.04492189
+Lives: 0 Coins: 0 Remaining Time: 60
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 0 Max X Jump: 0.0 Max Air Time: 0
+****************************************************************
+../../output_transformer/speedrunner/output_15path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.09249118
+Lives: 0 Coins: 0 Remaining Time: 59
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 3 (Stomps: 2 Fireballs: 0 Shells: 0 Falls: 1)
+Bricks: 0 Jumps: 0 Max X Jump: 0.0 Max Air Time: 0
+****************************************************************
+../../output_transformer/speedrunner/output_16path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.3208167
+Lives: 0 Coins: 1 Remaining Time: 55
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 0 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 0)
+Bricks: 0 Jumps: 9 Max X Jump: 192.2077 Max Air Time: 17
+****************************************************************
+../../output_transformer/speedrunner/output_17path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.03190401
+Lives: 0 Coins: 0 Remaining Time: 60
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 2 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 2)
+Bricks: 0 Jumps: 0 Max X Jump: 0.0 Max Air Time: 0
+****************************************************************
+../../output_transformer/speedrunner/output_18path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.3914506
+Lives: 0 Coins: 5 Remaining Time: 55
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 1 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 1)
+Bricks: 0 Jumps: 9 Max X Jump: 227.29298 Max Air Time: 29
+****************************************************************
+../../output_transformer/speedrunner/output_19path.txt
+****************************************************************
+Game Status: WIN Percentage Completion: 1.0
+Lives: 0 Coins: 4 Remaining Time: 50
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 33 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 33)
+Bricks: 0 Jumps: 18 Max X Jump: 174.83986 Max Air Time: 16
+****************************************************************
+../../output_transformer/speedrunner/output_20path.txt
+****************************************************************
+Game Status: LOSE Percentage Completion: 0.03190401
+Lives: 0 Coins: 0 Remaining Time: 60
+Mario State: 0 (Mushrooms: 0 Fire Flowers: 0)
+Total Kills: 2 (Stomps: 0 Fireballs: 0 Shells: 0 Falls: 2)
+Bricks: 0 Jumps: 0 Max X Jump: 0.0 Max Air Time: 0
+****************************************************************

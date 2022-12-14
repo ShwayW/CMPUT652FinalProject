@@ -32,11 +32,23 @@ public class PlayLevel {
     }
 
     public static void main(String[] args) {
-        MarioGame game = new MarioGame();
+        
         //printResults(game.playGame(getLevel("./levels/original/lvl-1.txt"), 200, 0));
         //printResults(game.playGame(getLevel("../../output/output_01path.txt"), 200, 0));
         // would also need to adjust the positionData.txt
-        printResults(game.runGame(new agents.robinBaumgarten.Agent(), getLevel("../../output/completionist/output_07path.txt"), 200, 0, true));
+        for(int i=1; i <=20; i++){
+            MarioGame game = new MarioGame();
+            String filePath = String.format("../../output_transformer/completionist/output_%dpath.txt", i);
+            System.out.println(filePath);
+            try{
+                printResults(game.runGame(new agents.robinBaumgarten.Agent(),getLevel(filePath), 60, 0));
+            }
+            catch(Exception e){
+                System.out.println("Unplayable");
+            }
+        }
+        
+        //printResults(game.runGame(new agents.robinBaumgarten.Agent(), getLevel("../../output/completionist/output_01path.txt"), 200, 0, true));
         //printResults(game.runGame(new agents.robinBaumgarten.Agent(), getLevel("./levels/original/lvl-2.txt"), 20, 0, true));
         //printResults(game.runGame(new agents.robinBaumgarten.Agent(), getLevel("./levels/original/lvl-3.txt"), 20, 0, true));
     }
