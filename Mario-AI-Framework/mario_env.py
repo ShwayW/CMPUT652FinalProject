@@ -9,7 +9,7 @@ class MarioEnv(gym.Env):
 
     metadata = {"render.modes": ["human"]}
     
-    def __init__(self, render=True, level = "./levels/original/lvl-1.txt", horizons=False, starts=False, timer = 20, sticky=False, paths=False):
+    def __init__(self, render=True, level = "./levels/original/lvl-1.txt", horizons=False, starts=False, timer = 20, sticky=False, paths=False, skip=4, max_timestep=165):
         super(MarioEnv, self).__init__()
 
         # Define action and observation space
@@ -26,6 +26,7 @@ class MarioEnv(gym.Env):
         self.kills = 0 # used to keep track of # of kills
         self.level = level # current mario level
         self.horizons = horizons # use non-variable (fixed) horizon?
+        self.max_timestep = max_timestep # if fixed-horizons, end on what timestep
         self.starts = starts # randomize starting point?
         self.timer = timer # max game time
         self.sticky = sticky # use sticky actions?
@@ -33,6 +34,7 @@ class MarioEnv(gym.Env):
         self.last_x = 0 # used for calculating reward function\
         self.paths = paths # save path data
         self.first_run = True
+        self.skip = skip # subsampling rate
 
         # Connect JVM
         if not jpype.isJVMStarted():
@@ -78,7 +80,7 @@ class MarioEnv(gym.Env):
             real_action = act
 
         # Step the environment 4 times
-        for i in range(4): 
+        for i in range(self.skip): 
             result = self.main.step(real_action) 
             
 
@@ -91,6 +93,11 @@ class MarioEnv(gym.Env):
         f = info[2] # 15 if flag_get, 0 otherwise # TODO: replace this with 0 or 1
 
         reward = -15 if d == -15 else 15 if f == 15 else vx + c
+
+        # reward goomba kill
+        if info[5] > self.kills:
+            self.kills +=1
+            reward = 15
 
         self.last_x = info[4] # set new last_x for next step
 
@@ -106,7 +113,7 @@ class MarioEnv(gym.Env):
 
         # If we want to have fixed horizons (fixed timestep)
         if self.horizons:
-            if self.timestep == 165:
+            if self.timestep == self.max_timestep:
                 done = True
                 
                 if self.render:
@@ -116,9 +123,11 @@ class MarioEnv(gym.Env):
                     self.obs = self.obs * 0 # Clear screen and prep to blit it with win/loss screen
 
                     if info[2] > 0:
-                        self.obs = (self.obs+1) * 170 # reserved for win screen
+                        self.obs = (self.obs+1) * 85 # reserved for win screen
                         reward = 15
-                    elif info[1] < 0: self.obs = (self.obs+1) * 85 # reserved for loss screen
+                    elif info[1] < 0:
+                        self.obs = (self.obs+1) * 185 # reserved for loss screen
+                        reward = -15
                      
         else:
             if self.done == True:
@@ -221,7 +230,7 @@ class MarioEnv(gym.Env):
         # TODO: do this process for other levels aside from 1-1...
         # Manually replace tiles in python which is easier than in Java...
         # about 10 important tiles so try to spread by 25
-
+        
         # self.obs[self.obs == 0] = 0 # sky 
         obs[obs == 17] = 25 # ground
         obs[obs == 18] = 50 # stair block
